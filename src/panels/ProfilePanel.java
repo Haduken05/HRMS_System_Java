@@ -1,24 +1,26 @@
 package panels;
 
+import dataObject.Employee;
+
 public class ProfilePanel extends javax.swing.JPanel {
 
     public ProfilePanel() {
         initComponents();
     }
 
-    public void loadProfile(Object[] emp) {
-        txtProfileID.setText(String.valueOf(emp[0]));
-        txtProfileName.setText((String) emp[1]);
-        txtProfileDept.setText((String) emp[2]);
-        txtProfilePos.setText((String) emp[3]);
-        txtProfileContact.setText((String) emp[4]);
+    public void loadProfile(Employee emp) {
+        txtProfileID.setText(String.valueOf(emp.empId));
+        txtProfileName.setText(emp.fullName);
+        txtProfileDept.setText(emp.department);
+        txtProfilePos.setText(emp.position);
+        txtProfileContact.setText(emp.contactNo);
 
-        txtProfileID1.setText(String.valueOf(emp[0]));
-        txtProfileName1.setText((String) emp[1]);
-        txtProfileDept1.setText((String) emp[2]);
-        txtProfilePos1.setText((String) emp[3]);
-        txtProfileContact1.setText((String) emp[4]);
-        txtProfileRole1.setText((String) emp[5]);
+        txtProfileID1.setText(String.valueOf(emp.empId));
+        txtProfileName1.setText(emp.fullName);
+        txtProfileDept1.setText(emp.department);
+        txtProfilePos1.setText(emp.position);
+        txtProfileContact1.setText(emp.contactNo);
+        txtProfileRole1.setText(emp.role);
     }
 
     @SuppressWarnings("unchecked")

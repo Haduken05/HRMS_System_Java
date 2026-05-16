@@ -1,5 +1,7 @@
 package panels;
 
+import dataObject.LeaveReport;
+import dataObject.StatusCount;
 import dbquery.ReportQuery;
 import javax.swing.table.DefaultTableModel;
 
@@ -11,10 +13,10 @@ public class ReportsPanel extends javax.swing.JPanel {
     }
 
     public void updateRequestCounts() {
-        int[] counts = ReportQuery.getStatusCounts();
-        lblPendingCount.setText(String.valueOf(counts[0]));
-        lblApprovedCount.setText(String.valueOf(counts[1]));
-        lblDisapprovedCount.setText(String.valueOf(counts[2]));
+        StatusCount counts = ReportQuery.getStatusCounts();
+        lblPendingCount.setText(String.valueOf(counts.pending));
+        lblApprovedCount.setText(String.valueOf(counts.approved));
+        lblDisapprovedCount.setText(String.valueOf(counts.disapproved));
     }
 
     @SuppressWarnings("unchecked")
@@ -244,8 +246,15 @@ public class ReportsPanel extends javax.swing.JPanel {
         for (String col : new String[]{"Employee Name", "Leave Type", "Start Date", "End Date", "Final Status"}) {
             model.addColumn(col);
         }
-        for (Object[] row : ReportQuery.getLeaveReport(filter)) {
-            model.addRow(row);
+
+        for (LeaveReport r : ReportQuery.getLeaveReport(filter)) {
+            model.addRow(new Object[]{
+                r.fullName,
+                r.leaveType,
+                r.startDate,
+                r.endDate,
+                r.status
+            });
         }
         tblReports.setModel(model);
     }//GEN-LAST:event_btnGenerateReportActionPerformed

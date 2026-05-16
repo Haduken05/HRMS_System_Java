@@ -3,6 +3,7 @@ package view;
 import newPanel.*;
 import panels.*;
 
+import dataObject.Employee;
 import dbquery.EmployeeQuery;
 import logic.SessionLogic;
 import javax.swing.*;
@@ -61,7 +62,7 @@ public class MainFrame extends JFrame {
         lblWelcome.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblWelcome.setMaximumSize(new Dimension(Integer.MAX_VALUE, 41));
         lblWelcome.setHorizontalAlignment(SwingConstants.CENTER);
-        
+
         sidebar.add(lblWelcome);
 
         sidebar.add(Box.createRigidArea(new Dimension(0, 6)));
@@ -72,9 +73,9 @@ public class MainFrame extends JFrame {
                 lblLogo.setIcon(new ImageIcon(imgUrl));
             }
         } catch (Exception ignored) {
-            
+
         }
-        
+
         lblLogo.setBackground(Color.WHITE);
         lblLogo.setOpaque(true);
         lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -139,14 +140,12 @@ public class MainFrame extends JFrame {
     }
 
     public void handleUserSession(String name, String role, int empId) {
-
         lblWelcome.setText("User: " + name + " (" + role + ")");
 
-        Object[] emp = EmployeeQuery.getById(empId);
+        Employee emp = EmployeeQuery.getById(empId);
         if (emp != null) {
-            profilePanel.loadProfile(emp);
+            profilePanel.loadProfile(emp); 
         }
-
         applyLeavePanel.setEmployee(empId, name);
 
         boolean isEmployee = SessionLogic.isEmployee(role);

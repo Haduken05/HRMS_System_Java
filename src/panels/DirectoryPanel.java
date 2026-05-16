@@ -1,8 +1,8 @@
 package panels;
 
+import dataObject.Employee;
 import dbquery.EmployeeQuery;
 import javax.swing.table.DefaultTableModel;
-
 
 public class DirectoryPanel extends javax.swing.JPanel {
 
@@ -191,22 +191,25 @@ public class DirectoryPanel extends javax.swing.JPanel {
     private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
         loadDirectory(txtSearch.getText(), cmbDeptFilter.getSelectedItem().toString());
     }//GEN-LAST:event_txtSearchKeyReleased
-    
-     public void displayEmployees() {
+
+    public void displayEmployees() {
         DefaultTableModel model = new DefaultTableModel();
         model.addColumn("ID");
         model.addColumn("Full Name");
         model.addColumn("Department");
         model.addColumn("Position");
-        for (Object[] row : EmployeeQuery.getAllEmployees()) model.addRow(row);
+        for (Employee e : EmployeeQuery.getAllEmployees()) {
+            model.addRow(new Object[]{e.empId, e.fullName, e.department, e.position});
+        }
         tblEmployees.setModel(model);
     }
 
     public void loadDirectory(String nameSearch, String deptFilter) {
         DefaultTableModel model = (DefaultTableModel) tblDirectory.getModel();
         model.setRowCount(0);
-        for (Object[] row : EmployeeQuery.searchDirectory(nameSearch, deptFilter))
-            model.addRow(row);
+        for (Employee e : EmployeeQuery.searchDirectory(nameSearch, deptFilter)) {
+            model.addRow(new Object[]{e.empId, e.fullName, e.department, e.position, e.contactNo});
+        }
         lblRecordCount.setText("Total Results: " + model.getRowCount());
     }
 

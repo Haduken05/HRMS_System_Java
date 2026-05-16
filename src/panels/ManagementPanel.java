@@ -1,7 +1,7 @@
 package panels;
 
 import dbquery.LeaveQuery;
-import dbquery.ReportQuery;
+import dataObject.LeaveRequest;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 
@@ -17,8 +17,17 @@ public class ManagementPanel extends javax.swing.JPanel {
         for (String col : new String[]{"ID", "Emp ID", "Name", "Type", "Start", "End", "Status"}) {
             model.addColumn(col);
         }
-        for (Object[] row : LeaveQuery.getPendingRequests()) {
-            model.addRow(row);
+
+        for (LeaveRequest r : LeaveQuery.getPendingRequests()) {
+            model.addRow(new Object[]{
+                r.requestId,
+                r.empId,
+                r.fullName,
+                r.leaveType,
+                r.startDate,
+                r.endDate,
+                r.status
+            });
         }
         tblPendingRequests.setModel(model);
     }
