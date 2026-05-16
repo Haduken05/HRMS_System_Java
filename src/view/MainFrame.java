@@ -12,7 +12,7 @@ import java.awt.*;
 public class MainFrame extends JFrame {
 
     private ApplyLeave applyLeavePanel;
-    private ProfilePanel profilePanel;
+    private Profile profilePanel;
     private DirectoryPanel directoryPanel;
     private ManagementPanel managementPanel;
     private ReportsPanel reportsPanel;
@@ -107,7 +107,7 @@ public class MainFrame extends JFrame {
 
     private void buildContentPanel() {
         applyLeavePanel = new ApplyLeave();
-        profilePanel = new ProfilePanel();
+        profilePanel = new Profile();
         directoryPanel = new DirectoryPanel();
         managementPanel = new ManagementPanel();
         reportsPanel = new ReportsPanel();
