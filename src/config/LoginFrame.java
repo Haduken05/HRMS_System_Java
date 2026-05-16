@@ -153,7 +153,7 @@ public class LoginFrame extends javax.swing.JFrame {
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         // TODO add your handling code here:
         String username = txtUsername.getText().trim();
-    String password = new String(txtPassword.getPassword()).trim(); 
+        String password = new String(txtPassword.getPassword()).trim(); 
 
     if (username.isEmpty() || password.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please fill in all fields.");
@@ -176,7 +176,8 @@ public class LoginFrame extends javax.swing.JFrame {
             String fullName = rs.getString("full_name");
             String userRole = rs.getString("role");
             int empId = rs.getInt("emp_id");
-
+            
+            //NewJFrame dashboard = new NewJFrame();
             view.MainFrame dashboard = new view.MainFrame();
             dashboard.handleUserSession(fullName, userRole, empId);
             

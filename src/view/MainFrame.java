@@ -1,5 +1,6 @@
 package view;
 
+import newPanel.*;
 import panels.*;
 
 import dbquery.EmployeeQuery;
@@ -9,7 +10,7 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
 
-    private ApplyLeavePanel applyLeavePanel;
+    private ApplyLeave applyLeavePanel;
     private ProfilePanel profilePanel;
     private DirectoryPanel directoryPanel;
     private ManagementPanel managementPanel;
@@ -104,7 +105,7 @@ public class MainFrame extends JFrame {
     }
 
     private void buildContentPanel() {
-        applyLeavePanel = new ApplyLeavePanel();
+        applyLeavePanel = new ApplyLeave();
         profilePanel = new ProfilePanel();
         directoryPanel = new DirectoryPanel();
         managementPanel = new ManagementPanel();
@@ -146,7 +147,7 @@ public class MainFrame extends JFrame {
             profilePanel.loadProfile(emp);
         }
 
-        applyLeavePanel.setEmpId(empId);
+        applyLeavePanel.setEmployee(empId, name);
 
         boolean isEmployee = SessionLogic.isEmployee(role);
         btnDirectory.setVisible(!isEmployee);
