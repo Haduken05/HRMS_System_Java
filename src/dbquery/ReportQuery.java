@@ -1,7 +1,7 @@
 package dbquery;
 
 import config.DBConnection;
-import dataObject.LeaveReport;
+import dataObject.LeaveReportRow;
 import dataObject.StatusCount;
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,8 +9,8 @@ import java.util.List;
 
 public class ReportQuery {
 
-    public static List<LeaveReport> getLeaveReport(String statusFilter) {
-        List<LeaveReport> list = new ArrayList<>();
+    public static List<LeaveReportRow> getLeaveReport(String statusFilter) {
+        List<LeaveReportRow> list = new ArrayList<>();
         String sql = "SELECT e.full_name, l.leave_type, l.start_date, l.end_date, l.status "
                 + "FROM employees e JOIN leave_requests l ON e.emp_id = l.emp_id";
         if (!statusFilter.equals("All")) {
@@ -23,7 +23,7 @@ public class ReportQuery {
             }
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
-                list.add(new LeaveReport(
+                list.add(new LeaveReportRow(
                         rs.getString("full_name"),
                         rs.getString("leave_type"),
                         rs.getDate("start_date"),

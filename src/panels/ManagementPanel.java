@@ -1,7 +1,7 @@
 package panels;
 
 import dbquery.LeaveQuery;
-import dataObject.LeaveRequest;
+import dataObject.LeaveRequestEntity;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 
@@ -9,28 +9,28 @@ public class ManagementPanel extends javax.swing.JPanel {
 
     public ManagementPanel() {
         initComponents();
-        displayPendingRequests();
+//        displayPendingRequests();
     }
 
-    public void displayPendingRequests() {
-        DefaultTableModel model = new DefaultTableModel();
-        for (String col : new String[]{"ID", "Emp ID", "Name", "Type", "Start", "End", "Status"}) {
-            model.addColumn(col);
-        }
-
-        for (LeaveRequest r : LeaveQuery.getPendingRequests()) {
-            model.addRow(new Object[]{
-                r.requestId,
-                r.empId,
-                r.fullName,
-                r.leaveType,
-                r.startDate,
-                r.endDate,
-                r.status
-            });
-        }
-        tblPendingRequests.setModel(model);
-    }
+//    public void displayPendingRequests() {
+//        DefaultTableModel model = new DefaultTableModel();
+//        for (String col : new String[]{"ID", "Emp ID", "Name", "Type", "Start", "End", "Status"}) {
+//            model.addColumn(col);
+//        }
+//
+//        for (LeaveRequestEntity r : LeaveQuery.getPendingRequests()) {
+//            model.addRow(new Object[]{
+//                r.requestId,
+//                r.empId,
+//                r.fullName,
+//                r.leaveType,
+//                r.startDate,
+//                r.endDate,
+//                r.status
+//            });
+//        }
+//        tblPendingRequests.setModel(model);
+//    }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -144,7 +144,7 @@ public class ManagementPanel extends javax.swing.JPanel {
                 "Approve leave for " + empName + "?", "Confirm", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION && LeaveQuery.updateStatus(requestId, "Approved")) {
             JOptionPane.showMessageDialog(this, "Leave for " + empName + " approved!");
-            displayPendingRequests();
+//            displayPendingRequests();
         }
     }//GEN-LAST:event_btnApproveActionPerformed
 
@@ -158,12 +158,12 @@ public class ManagementPanel extends javax.swing.JPanel {
         String requestId = tblPendingRequests.getValueAt(row, 0).toString();
         if (LeaveQuery.updateStatus(requestId, "Disapproved")) {
             JOptionPane.showMessageDialog(this, "Request #" + requestId + " disapproved.");
-            displayPendingRequests();
+//            displayPendingRequests();
         }
     }//GEN-LAST:event_btnDisapproveActionPerformed
 
     private void btnRefreshMgmtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshMgmtActionPerformed
-        displayPendingRequests();
+//        displayPendingRequests();
     }//GEN-LAST:event_btnRefreshMgmtActionPerformed
 
 

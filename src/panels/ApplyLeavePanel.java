@@ -197,32 +197,32 @@ public class ApplyLeavePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnBrowseActionPerformed
 
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
-        String empIdStr = txtEmpID.getText().trim();
-        String leaveType = cmbLeaveType.getSelectedItem().toString();
-        java.util.Date startDate = jdStart.getDate();
-        java.util.Date endDate = jdEnd.getDate();
-
-        String error = LeaveLogic.validate(empIdStr, leaveType, startDate, endDate, selectedPath);
-        if (error != null) {
-            JOptionPane.showMessageDialog(this, error);
-            return;
-        }
-
-        int empId = Integer.parseInt(empIdStr);
-        String empName = LeaveQuery.getEmployeeNameById(empId);
-        if (empName == null) {
-            JOptionPane.showMessageDialog(this, "Employee ID not found!");
-            return;
-        }
-
-        long daysOfLeave = (endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000);
-        String medCert = (leaveType.equals("SL") && daysOfLeave >= 1) ? selectedPath : "None";
-
-        if (LeaveQuery.submitRequest(empId, leaveType, startDate, endDate, medCert)) {
-            JOptionPane.showMessageDialog(this, "Leave filed successfully for " + empName + "!");
-            selectedPath = "None";
-            lblFilePath.setText("No file selected");
-        }
+//        String empIdStr = txtEmpID.getText().trim();
+//        String leaveType = cmbLeaveType.getSelectedItem().toString();
+//        java.util.Date startDate = jdStart.getDate();
+//        java.util.Date endDate = jdEnd.getDate();
+//
+//        String error = LeaveLogic.validate(empIdStr, leaveType, startDate, endDate, selectedPath);
+//        if (error != null) {
+//            JOptionPane.showMessageDialog(this, error);
+//            return;
+//        }
+//
+//        int empId = Integer.parseInt(empIdStr);
+//        String empName = LeaveQuery.getEmployeeNameById(empId);
+//        if (empName == null) {
+//            JOptionPane.showMessageDialog(this, "Employee ID not found!");
+//            return;
+//        }
+//
+//        long daysOfLeave = (endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000);
+//        String medCert = (leaveType.equals("SL") && daysOfLeave >= 1) ? selectedPath : "None";
+//
+//        if (LeaveQuery.submitRequest(empId, leaveType, startDate, endDate, medCert)) {
+//            JOptionPane.showMessageDialog(this, "Leave filed successfully for " + empName + "!");
+//            selectedPath = "None";
+//            lblFilePath.setText("No file selected");
+//        }
     }//GEN-LAST:event_btnSubmitActionPerformed
 
     public void setEmpId(int id) {

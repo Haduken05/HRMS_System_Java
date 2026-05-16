@@ -10,7 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Modern Profile Management Interface with Tab Switching
+ * Modern Profile Management Interface with Tab Switching and Leave Credits
  * @author Coke
  */
 public class Profile extends JPanel {
@@ -26,6 +26,7 @@ public class Profile extends JPanel {
 
     // --- CLASS LEVEL FIELD DECLARATIONS ---
     private JLabel lblAvatarCircle, lblProfileName, lblEmployeeID;
+    private JLabel lblSickLeave, lblVacationLeave; // Leave credit labels
     private JLabel tabPersonalInfo, tabChangePassword;
     private JPanel cardsPanel;
     private CardLayout cardLayout;
@@ -43,7 +44,7 @@ public class Profile extends JPanel {
     }
 
     private void initComponents() {
-        setPreferredSize(new Dimension(800, 700));
+        setPreferredSize(new Dimension(800, 750)); // Slightly increased height for credits
         setBackground(COLOR_BG);
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(30, 40, 30, 40));
@@ -74,13 +75,18 @@ public class Profile extends JPanel {
         mainSplitCard.setBackground(COLOR_CARD);
         mainSplitCard.setBorder(new LineBorder(Color.decode("#CBD5E1"), 1, true));
 
-        // LEFT COLUMN (Avatar)
-        JPanel leftColumn = new JPanel();
+        // --- LEFT COLUMN (Avatar & Credit Metrics) ---
+        JPanel leftColumn = new JPanel(new GridBagLayout());
         leftColumn.setBackground(COLOR_CARD);
-        leftColumn.setPreferredSize(new Dimension(220, 0));
-        leftColumn.setLayout(new BoxLayout(leftColumn, BoxLayout.Y_AXIS));
-        leftColumn.setBorder(new EmptyBorder(40, 20, 40, 20));
+        leftColumn.setPreferredSize(new Dimension(240, 0)); // Widened slightly for better card fit
+        leftColumn.setBorder(new EmptyBorder(30, 20, 30, 20));
 
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+
+        // Avatar Circle
         lblAvatarCircle = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -92,30 +98,55 @@ public class Profile extends JPanel {
                 super.paintComponent(g);
             }
         };
-        lblAvatarCircle.setPreferredSize(new Dimension(140, 140));
-        lblAvatarCircle.setMaximumSize(new Dimension(140, 140));
-        lblAvatarCircle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblAvatarCircle.setPreferredSize(new Dimension(130, 130));
+        lblAvatarCircle.setMinimumSize(new Dimension(130, 130));
+        
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.NONE;
+        leftColumn.add(lblAvatarCircle, gbc);
 
-        lblProfileName = new JLabel("Employee Name");
+        // Profile Name
+        lblProfileName = new JLabel("Employee Name", SwingConstants.CENTER);
         lblProfileName.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblProfileName.setForeground(COLOR_TEXT_MAIN);
-        lblProfileName.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        gbc.gridy = 1;
+        gbc.insets = new Insets(15, 0, 0, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        leftColumn.add(lblProfileName, gbc);
 
-        lblEmployeeID = new JLabel("EMP000");
+        // Employee ID
+        lblEmployeeID = new JLabel("EMP000", SwingConstants.CENTER);
         lblEmployeeID.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblEmployeeID.setForeground(COLOR_TEXT_MUTED);
-        lblEmployeeID.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        gbc.gridy = 2;
+        gbc.insets = new Insets(4, 0, 25, 0); // Pushes down to separate from credits
+        leftColumn.add(lblEmployeeID, gbc);
 
-        leftColumn.add(lblAvatarCircle);
-        leftColumn.add(Box.createVerticalStrut(20));
-        leftColumn.add(lblProfileName);
-        leftColumn.add(Box.createVerticalStrut(4));
-        leftColumn.add(lblEmployeeID);
+        // Sick Leave Balance Card
+        lblSickLeave = new JLabel("0.0"); // Initial placeholder value
+        JPanel pnlSickLeave = createCreditBox("Sick Leave Credits", lblSickLeave, Color.decode("#F1F5F9"));
+        gbc.gridy = 3;
+        gbc.insets = new Insets(0, 0, 12, 0);
+        leftColumn.add(pnlSickLeave, gbc);
 
-        // RIGHT COLUMN (Tabs & Form)
+        // Vacation Leave Balance Card
+        lblVacationLeave = new JLabel("0.0"); // Initial placeholder value
+        JPanel pnlVacationLeave = createCreditBox("Vacation Leave Credits", lblVacationLeave, Color.decode("#F1F5F9"));
+        gbc.gridy = 4;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        // Let it expand vertically if needed, push everything to top
+        gbc.weighty = 1.0;
+        gbc.anchor = GridBagConstraints.NORTH;
+        leftColumn.add(pnlVacationLeave, gbc);
+
+
+        // --- RIGHT COLUMN (Tabs & Form) ---
         JPanel rightColumn = new JPanel(new BorderLayout());
         rightColumn.setBackground(COLOR_CARD);
-        rightColumn.setBorder(BorderFactory.createMatteBorder(0, 2, 0, 0, COLOR_ACCENT_BLUE));
+        rightColumn.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.decode("#CBD5E1")));
 
         // --- TAB HEADER ---
         JPanel tabsHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
@@ -158,7 +189,7 @@ public class Profile extends JPanel {
         // CARD 2: Change Password
         JPanel changePasswordGrid = new JPanel(new GridLayout(3, 1, 0, 20));
         changePasswordGrid.setBackground(COLOR_CARD);
-        changePasswordGrid.setBorder(new EmptyBorder(30, 30, 30, 200)); // Pushes fields to be narrower
+        changePasswordGrid.setBorder(new EmptyBorder(30, 30, 30, 200)); 
 
         changePasswordGrid.add(createFieldWrapper("Current Password", txtCurrentPwd = createStyledPasswordField()));
         changePasswordGrid.add(createFieldWrapper("New Password", txtNewPwd = createStyledPasswordField()));
@@ -219,6 +250,40 @@ public class Profile extends JPanel {
     }
 
     // --- HELPERS ---
+    
+    /**
+     * Creates a custom card layout component representing leave metrics
+     */
+    private JPanel createCreditBox(String title, JLabel valueLabel, Color bgColor) {
+        JPanel container = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(bgColor);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                g2.setColor(Color.decode("#E2E8F0"));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+                g2.dispose();
+            }
+        };
+        container.setLayout(new BorderLayout());
+        container.setBorder(new EmptyBorder(12, 15, 12, 15));
+        container.setPreferredSize(new Dimension(200, 70));
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        titleLabel.setForeground(COLOR_TEXT_MUTED);
+
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        valueLabel.setForeground(COLOR_TEXT_MAIN);
+
+        container.add(titleLabel, BorderLayout.NORTH);
+        container.add(valueLabel, BorderLayout.CENTER);
+
+        return container;
+    }
+
     private JPanel createFieldWrapper(String labelText, JComponent inputComponent) {
         JPanel wrapper = new JPanel();
         wrapper.setBackground(COLOR_CARD);
@@ -243,7 +308,7 @@ public class Profile extends JPanel {
                 new EmptyBorder(0, 12, 0, 12)
         ));
         textField.setPreferredSize(new Dimension(0, 40));
-        textField.setEditable(false); // Default to read-only for Personal Info
+        textField.setEditable(false); 
         return textField;
     }
 
@@ -276,6 +341,10 @@ public class Profile extends JPanel {
         txtPhone.setText(emp.contactNo);
         txtDepartment.setText(emp.department);
         txtPosition.setText(emp.position);
-        txtHireDate.setText("January 10, 2022");       
+        txtHireDate.setText("January 10, 2022");        
+
+        // Set Leave Credit Values dynamically here when variables are bound to 'emp' object
+        lblSickLeave.setText("15.0");       // Example hardcoded allocation
+        lblVacationLeave.setText("12.5");   // Example hardcoded allocation
     }
 }

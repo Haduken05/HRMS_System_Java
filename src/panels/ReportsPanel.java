@@ -1,6 +1,6 @@
 package panels;
 
-import dataObject.LeaveReport;
+import dataObject.LeaveReportRow;
 import dataObject.StatusCount;
 import dbquery.ReportQuery;
 import javax.swing.table.DefaultTableModel;
@@ -247,7 +247,7 @@ public class ReportsPanel extends javax.swing.JPanel {
             model.addColumn(col);
         }
 
-        for (LeaveReport r : ReportQuery.getLeaveReport(filter)) {
+        for (LeaveReportRow r : ReportQuery.getLeaveReport(filter)) {
             model.addRow(new Object[]{
                 r.fullName,
                 r.leaveType,
