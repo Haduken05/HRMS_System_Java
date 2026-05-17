@@ -43,14 +43,27 @@ public class LoginFrame extends javax.swing.JFrame {
         jPanel1 = new JPanel(new GridBagLayout());
         jPanel1.setBackground(COLOR_PRIMARY_BRAND);
         jPanel1.setPreferredSize(new Dimension(300, 500));
-        
+                
         String imgPath = "Hrms_Logo.png";
         
         jLabel4 = new JLabel();
         try {
-            jLabel4.setIcon(new ImageIcon(getClass().getResource("/Image/" + imgPath)));          
+            // 1. Load the original image icon
+            java.net.URL imgURL = getClass().getResource("/Image/" + imgPath);
+            if (imgURL != null) {
+                ImageIcon originalIcon = new ImageIcon(imgURL);
+                
+                int targetWidth = 250;
+                int targetHeight = 140;
+                
+                Image scaledImage = originalIcon.getImage().getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+                
+                jLabel4.setIcon(new ImageIcon(scaledImage));
+            } else {
+                logger.log(Level.WARNING, "Logo image not found at path /Image/{0}", imgPath);
+            }
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Logo image not found at /Image/{0}", imgPath);
+            logger.log(Level.SEVERE, "Error scaling logo image", e);
         }
         jPanel1.add(jLabel4);
 
