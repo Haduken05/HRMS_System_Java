@@ -30,6 +30,8 @@ public class LoginFrame extends javax.swing.JFrame {
 
     public LoginFrame() {
         initComponents();
+        
+        this.getRootPane().setDefaultButton(btnLogin);
     }
 
     private void initComponents() {

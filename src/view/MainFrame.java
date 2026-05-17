@@ -19,7 +19,7 @@ public class MainFrame extends JFrame {
     private Profile profilePanel;
     private EmployeeManagement empManagement;
     private LeaveRequestApproval leaveRequest;
-    private ReportsPanel reportsPanel;
+    private Report reportsPanel;
 
     private final JButton btnApplyLeave = new JButton("Apply Leave");
     private final JButton btnProfile = new JButton("Profile");
@@ -129,7 +129,7 @@ public class MainFrame extends JFrame {
         profilePanel = new Profile();
         empManagement = new EmployeeManagement();
         leaveRequest = new LeaveRequestApproval();
-        reportsPanel = new ReportsPanel();
+        reportsPanel = new Report();
 
         applyLeavePanel.setOnSubmitSuccess(() -> profilePanel.refreshCredits());
         leaveRequest.setOnStatusChanged(() -> applyLeavePanel.refreshCreditBadges());

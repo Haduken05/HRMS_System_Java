@@ -225,4 +225,31 @@ public class LeaveQuery {
         }
         return list;
     }
+
+    public static List<LeaveRequestEntity> getLeavesForMonth(int year, int month) {
+        List<LeaveRequestEntity> list = new ArrayList<>();
+        // month is 1-based (1=Jan … 12=Dec)
+        String sql = "SELECT lr.request_id, lr.emp_id, e.full_name, "
+                + "lr.leave_type, lr.start_date, lr.end_date, lr.status "
+                + "FROM leave_requests lr "
+                + "INNER JOIN employees e ON lr.emp_id = e.emp_id "
+                + "WHERE lr.status IN ('Approved', 'Pending') "
+                + "AND lr.start_date <= LAST_DAY(?) "
+                + "AND lr.end_date   >= ? "
+                + "ORDER BY lr.start_date ASC";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(sql)) {
+            // First day of the requested month
+            java.sql.Date firstDay = java.sql.Date.valueOf(
+                    java.time.LocalDate.of(year, month, 1));
+            pst.setDate(1, firstDay);
+            pst.setDate(2, firstDay);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                list.add(mapEntity(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

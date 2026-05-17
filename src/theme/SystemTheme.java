@@ -11,7 +11,6 @@ public class SystemTheme {
     public static final Color CARD_BG = Color.decode("#F8FAFC");
     public static final Color FIELD_BG = Color.decode("#E2E8F0");
     public static final Color BORDER_COLOR = Color.decode("#CBD5E1");
-
     
     public static final Color TEXT_COLOR = Color.decode("#FFFFFF");
     public static final Color TEXT_MAIN = Color.decode("#0F172A");
@@ -28,6 +27,15 @@ public class SystemTheme {
     public static final Color BADGE_TEXT = Color.decode("#e0f0f5");
     
     public static final Color ROW_SELECTED = Color.decode("#1E3A5F");
+    
+    // Calendar Colors
+    public static final Color APPROVED_COLOR  = Color.decode("#16A34A");
+    public static final Color APPROVED_BG     = Color.decode("#DCFCE7"); 
+    public static final Color PENDING_COLOR   = Color.decode("#B45309");
+    public static final Color PENDING_BG      = Color.decode("#FEF9C3"); 
+    public static final Color CALENDAR_TODAY_RING      = Color.decode("#0EA5E9"); 
+    public static final Color CALENDAR_WEEKEND_BG      = Color.decode("#F8FAFC");
+    public static final Color CALENDAR_CELL_HOVER   = Color.decode("#F0F9FF");
 
     
     private static final String FONT_FAMILY = "Segoe UI";
@@ -42,4 +50,5 @@ public class SystemTheme {
     public static final Font BIG_TEXT_BOLD = new Font(FONT_FAMILY, Font.BOLD, 24);
     
     public static final Font HEADER_TEXT = new Font(FONT_FAMILY, Font.BOLD, 30);
+    public static final Font PANDAK_TEXT = new Font(FONT_FAMILY, Font.BOLD, 10);
 }
