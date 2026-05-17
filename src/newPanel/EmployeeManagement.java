@@ -1,5 +1,6 @@
 package newPanel;
 
+import theme.SystemTheme;
 import logic.EmployeeValidation;
 import dataObject.Employee;
 import dbquery.EmployeeQuery;
@@ -20,13 +21,16 @@ import java.util.List;
 
 public class EmployeeManagement extends JPanel {
 
-    private final Color COLOR_BG = Color.decode("#F8FAFC");
+    private final Color COLOR_BG = SystemTheme.CARD_BG;
     private final Color COLOR_CARD = Color.WHITE;
-    private final Color COLOR_TEXT_MAIN = Color.decode("#0F172A");
-    private final Color COLOR_TEXT_MUTED = Color.decode("#64748B");
-    private final Color COLOR_ACCENT = Color.decode("#0EA5E9");
-    private final Color COLOR_BTN_DARK = Color.decode("#1E293B");
-    private final Color COLOR_DANGER = Color.decode("#EF4444");
+    private final Color COLOR_TEXT_MAIN = SystemTheme.TEXT_MAIN;
+    private final Color COLOR_TEXT_MUTED = SystemTheme.TEXT_MUTED;
+    private final Color COLOR_TEXT_NORMAL = SystemTheme.TEXT_COLOR;
+    
+    private final Color COLOR_ACCENT = SystemTheme.TEXT_INDICATOR;
+    private final Color COLOR_BTN_DARK = SystemTheme.BTN_YES;
+    private final Color COLOR_DANGER = SystemTheme.BTN_NO;
+    private final Color BTN_REFRESH = SystemTheme.BTN_REFRESH;
 
     private JLabel tabDirectory, tabAddEmployee, tabOffboard;
     private JPanel cardsPanel;
@@ -71,12 +75,12 @@ public class EmployeeManagement extends JPanel {
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
         JLabel titleLabel = new JLabel("Employee Management");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titleLabel.setFont(SystemTheme.HEADER_TEXT);
         titleLabel.setForeground(COLOR_TEXT_MAIN);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel breadcrumb = new JLabel("Dashboard / Employees");
-        breadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        breadcrumb.setFont(SystemTheme.NORMAL_TEXT);
         breadcrumb.setForeground(COLOR_TEXT_MUTED);
         breadcrumb.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -170,7 +174,7 @@ public class EmployeeManagement extends JPanel {
         filterRow.add(createFieldWrapper("Department", cmbSearchDept), gbc);
 
         lblTotalCount = new JLabel("Total: 0");
-        lblTotalCount.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTotalCount.setFont(SystemTheme.BOLD_TEXT);
         lblTotalCount.setForeground(COLOR_ACCENT);
         gbc.gridx = 3;
         gbc.weightx = 0.3;
@@ -189,7 +193,7 @@ public class EmployeeManagement extends JPanel {
         employeeTable = new JTable(tableModel);
         rowSorter = new TableRowSorter<>(tableModel);
         employeeTable.setRowSorter(rowSorter);
-        employeeTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        employeeTable.setFont(SystemTheme.NORMAL_TEXT);
         employeeTable.setRowHeight(35);
         employeeTable.setGridColor(Color.decode("#F1F5F9"));
         employeeTable.setSelectionBackground(Color.decode("#F0F9FF"));
@@ -197,7 +201,7 @@ public class EmployeeManagement extends JPanel {
         employeeTable.setShowVerticalLines(false);
 
         JTableHeader header = employeeTable.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        header.setFont(SystemTheme.BOLD_TEXT);
         header.setBackground(Color.decode("#F8FAFC"));
         header.setForeground(COLOR_TEXT_MUTED);
         header.setReorderingAllowed(false);
@@ -215,9 +219,9 @@ public class EmployeeManagement extends JPanel {
         JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 10));
         bottomBar.setBackground(COLOR_CARD);
         JButton btnRefresh = new JButton("Refresh");
-        btnRefresh.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnRefresh.setBackground(Color.decode("#F1F5F9"));
-        btnRefresh.setForeground(COLOR_TEXT_MAIN);
+        btnRefresh.setFont(SystemTheme.BOLD_TEXT);
+        btnRefresh.setBackground(BTN_REFRESH);
+        btnRefresh.setForeground(COLOR_TEXT_NORMAL);
         btnRefresh.setBorder(new LineBorder(Color.decode("#CBD5E1"), 1, true));
         btnRefresh.setFocusPainted(false);
         btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -245,7 +249,7 @@ public class EmployeeManagement extends JPanel {
         panel.setBorder(new EmptyBorder(30, 40, 30, 40));
 
         JLabel caption = new JLabel("Onboard a New Employee");
-        caption.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        caption.setFont(SystemTheme.LARGE_TEXT_BOLD);
         caption.setForeground(COLOR_TEXT_MAIN);
         caption.setBorder(new EmptyBorder(0, 0, 20, 0));
         panel.add(caption, BorderLayout.NORTH);
@@ -264,13 +268,13 @@ public class EmployeeManagement extends JPanel {
 
         radEmployee = new JRadioButton("Employee");
         radEmployee.setSelected(true);
-        radEmployee.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        radEmployee.setFont(SystemTheme.NORMAL_TEXT);
         radEmployee.setForeground(COLOR_TEXT_MAIN);
         radEmployee.setBackground(COLOR_CARD);
         radEmployee.setFocusPainted(false);
 
         radSupervisor = new JRadioButton("Supervisor");
-        radSupervisor.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        radSupervisor.setFont(SystemTheme.NORMAL_TEXT);
         radSupervisor.setForeground(COLOR_TEXT_MAIN);
         radSupervisor.setBackground(COLOR_CARD);
         radSupervisor.setFocusPainted(false);
@@ -375,7 +379,7 @@ public class EmployeeManagement extends JPanel {
         panel.setBorder(new EmptyBorder(30, 40, 30, 40));
 
         JLabel caption = new JLabel("Offboard Employee");
-        caption.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        caption.setFont(SystemTheme.LARGE_TEXT_BOLD);
         caption.setForeground(COLOR_TEXT_MAIN);
         caption.setBorder(new EmptyBorder(0, 0, 20, 0));
         panel.add(caption, BorderLayout.NORTH);
@@ -388,7 +392,7 @@ public class EmployeeManagement extends JPanel {
         txtFireID.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
         lblFirePreview = new JLabel(" ");
-        lblFirePreview.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblFirePreview.setFont(SystemTheme.BOLD_TEXT);
         lblFirePreview.setForeground(COLOR_ACCENT);
         lblFirePreview.setBorder(new EmptyBorder(6, 2, 0, 0));
         lblFirePreview.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -403,7 +407,7 @@ public class EmployeeManagement extends JPanel {
         });
 
         txtFireReason = new JTextArea(6, 20);
-        txtFireReason.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtFireReason.setFont(SystemTheme.NORMAL_TEXT);
         txtFireReason.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(Color.decode("#CBD5E1"), 1, true),
                 new EmptyBorder(10, 12, 10, 12)));
@@ -560,7 +564,7 @@ public class EmployeeManagement extends JPanel {
 
     private JLabel makeTab(String text) {
         JLabel lbl = new JLabel(text);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lbl.setFont(SystemTheme.BOLD_TEXT);
         lbl.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return lbl;
     }
@@ -582,7 +586,7 @@ public class EmployeeManagement extends JPanel {
         wrap.setBackground(COLOR_CARD);
         wrap.setLayout(new BoxLayout(wrap, BoxLayout.Y_AXIS));
         JLabel lbl = new JLabel(labelText);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lbl.setFont(SystemTheme.BOLD_TEXT);
         lbl.setForeground(COLOR_TEXT_MAIN);
         lbl.setBorder(new EmptyBorder(0, 0, 6, 0));
         lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -594,7 +598,7 @@ public class EmployeeManagement extends JPanel {
 
     private JTextField createStyledTextField() {
         JTextField tf = new JTextField();
-        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tf.setFont(SystemTheme.NORMAL_TEXT);
         tf.setBackground(COLOR_CARD);
         tf.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(Color.decode("#CBD5E1"), 1, true),
@@ -610,7 +614,7 @@ public class EmployeeManagement extends JPanel {
     }
 
     private void styleComboBox(JComboBox<?> cb) {
-        cb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cb.setFont(SystemTheme.NORMAL_TEXT);
         cb.setBackground(COLOR_CARD);
         cb.setPreferredSize(new Dimension(0, 40));
         cb.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
@@ -619,7 +623,7 @@ public class EmployeeManagement extends JPanel {
     private void styleButton(JButton btn, Color bg, Color fg) {
         btn.setBackground(bg);
         btn.setForeground(fg);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFont(SystemTheme.BOLD_TEXT);
         btn.setFocusPainted(false);
         btn.setOpaque(true);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));

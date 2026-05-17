@@ -1,5 +1,6 @@
 package newPanel;
 
+import theme.SystemTheme;
 import dbquery.LeaveQuery;
 import dataObject.LeaveRequestRow;
 import dataObject.LeaveRequestEntity;
@@ -21,13 +22,15 @@ import java.util.List;
 
 public class LeaveRequestApproval extends JPanel {
 
-    private final Color COLOR_BG = Color.decode("#F8FAFC");
+    private final Color COLOR_BG = SystemTheme.CARD_BG;
     private final Color COLOR_CARD = Color.WHITE;
-    private final Color COLOR_TEXT_MAIN = Color.decode("#0F172A");
-    private final Color COLOR_TEXT_MUTED = Color.decode("#64748B");
-    private final Color COLOR_ACCENT = Color.decode("#0EA5E9");
-    private final Color COLOR_SUCCESS = Color.decode("#10B981");
-    private final Color COLOR_DANGER = Color.decode("#EF4444");
+    private final Color COLOR_TEXT_MAIN = SystemTheme.TEXT_MAIN;
+    private final Color COLOR_TEXT_MUTED = SystemTheme.TEXT_MUTED;
+    private final Color COLOR_TEXT_NORMAL = SystemTheme.TEXT_COLOR;
+    private final Color COLOR_ACCENT = SystemTheme.TEXT_INDICATOR;
+    private final Color COLOR_SUCCESS = SystemTheme.BTN_YES;
+    private final Color COLOR_DANGER = SystemTheme.BTN_NO;
+    private final Color COLOR_REFRESH = SystemTheme.BTN_REFRESH;
 
     private JLabel tabPending, tabApproved, tabDenied;
     private JPanel cardsPanel;
@@ -71,11 +74,11 @@ public class LeaveRequestApproval extends JPanel {
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
         JLabel titleLabel = new JLabel("Leave Requests");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titleLabel.setFont(SystemTheme.HEADER_TEXT);
         titleLabel.setForeground(COLOR_TEXT_MAIN);
 
         JLabel breadcrumb = new JLabel("Dashboard / Leave Approvals");
-        breadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        breadcrumb.setFont(SystemTheme.NORMAL_TEXT);
         breadcrumb.setForeground(COLOR_TEXT_MUTED);
 
         headerPanel.add(titleLabel);
@@ -98,7 +101,7 @@ public class LeaveRequestApproval extends JPanel {
         tabApproved = new JLabel("Approved History");
         tabDenied = new JLabel("Denied Archive");
 
-        Font tabFont = new Font("Segoe UI", Font.BOLD, 14);
+        Font tabFont = SystemTheme.BOLD_TEXT;
         for (JLabel tab : new JLabel[]{tabPending, tabApproved, tabDenied}) {
             tab.setFont(tabFont);
             tab.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -130,9 +133,9 @@ public class LeaveRequestApproval extends JPanel {
         utilityFilterBar.add(searchInputsPanel, BorderLayout.WEST);
 
         JButton btnRefresh = new JButton("Refresh");
-        btnRefresh.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnRefresh.setBackground(Color.decode("#F1F5F9"));
-        btnRefresh.setForeground(COLOR_TEXT_MAIN);
+        btnRefresh.setFont(SystemTheme.BOLD_TEXT);
+        btnRefresh.setBackground(COLOR_REFRESH);
+        btnRefresh.setForeground(COLOR_TEXT_NORMAL);
         btnRefresh.setBorder(new LineBorder(Color.decode("#CBD5E1"), 1, true));
         btnRefresh.setFocusPainted(false);
         btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -142,7 +145,7 @@ public class LeaveRequestApproval extends JPanel {
         JPanel metricsContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 18));
         metricsContainer.setBackground(COLOR_CARD);
         lblMetricsTracker = new JLabel("Pending Queue: 0 entries found");
-        lblMetricsTracker.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblMetricsTracker.setFont(SystemTheme.BOLD_TEXT);
         lblMetricsTracker.setForeground(COLOR_ACCENT);
         metricsContainer.add(lblMetricsTracker);
         metricsContainer.add(btnRefresh);
@@ -329,7 +332,7 @@ public class LeaveRequestApproval extends JPanel {
         JButton btnPrev = new JButton(" < ");
         JButton btnNext = new JButton(" > ");
         JLabel lblPage = new JLabel("Page 1 of 1");
-        lblPage.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblPage.setFont(SystemTheme.BOLD_TEXT);
         lblPage.setForeground(COLOR_TEXT_MUTED);
         stylePaginationButton(btnPrev);
         stylePaginationButton(btnNext);
@@ -514,7 +517,7 @@ public class LeaveRequestApproval extends JPanel {
 
     private JTable buildConfiguredTable(DefaultTableModel model) {
         JTable table = new JTable(model);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setFont(SystemTheme.NORMAL_TEXT);
         table.setRowHeight(38);
         table.setGridColor(Color.decode("#F1F5F9"));
         table.setSelectionBackground(Color.decode("#F0F9FF"));
@@ -522,7 +525,7 @@ public class LeaveRequestApproval extends JPanel {
         table.setShowVerticalLines(false);
 
         JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        header.setFont(SystemTheme.BOLD_TEXT);
         header.setBackground(Color.decode("#F8FAFC"));
         header.setForeground(COLOR_TEXT_MUTED);
         header.setReorderingAllowed(false);
@@ -535,7 +538,7 @@ public class LeaveRequestApproval extends JPanel {
                 super.getTableCellRendererComponent(t, v, sel, foc, r, c);
                 setBorder(new EmptyBorder(0, 12, 0, 12));
                 if (c == 6 && v != null) {
-                    setFont(new Font("Segoe UI", Font.BOLD, 13));
+                    setFont(SystemTheme.BOLD_TEXT);
                     String val = v.toString();
                     if (val.equalsIgnoreCase("Approved")) {
                         setForeground(COLOR_SUCCESS);
@@ -546,7 +549,7 @@ public class LeaveRequestApproval extends JPanel {
                     }
                 } else {
                     setForeground(COLOR_TEXT_MAIN);
-                    setFont(new Font("Segoe UI", Font.PLAIN, 14));
+                    setFont(SystemTheme.NORMAL_TEXT);
                 }
                 return this;
             }
@@ -580,7 +583,7 @@ public class LeaveRequestApproval extends JPanel {
         wrap.setBackground(COLOR_CARD);
         wrap.setLayout(new BoxLayout(wrap, BoxLayout.Y_AXIS));
         JLabel lbl = new JLabel(labelText);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lbl.setFont(SystemTheme.BOLD_TEXT);
         lbl.setForeground(COLOR_TEXT_MAIN);
         lbl.setBorder(new EmptyBorder(0, 0, 6, 0));
         lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -592,7 +595,7 @@ public class LeaveRequestApproval extends JPanel {
 
     private JTextField createStyledInputTextField() {
         JTextField tf = new JTextField();
-        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tf.setFont(SystemTheme.NORMAL_TEXT);
         tf.setBackground(COLOR_CARD);
         tf.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(Color.decode("#CBD5E1"), 1, true),
@@ -603,7 +606,7 @@ public class LeaveRequestApproval extends JPanel {
     private void styleActionButton(JButton b, Color bg) {
         b.setBackground(bg);
         b.setForeground(Color.WHITE);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        b.setFont(SystemTheme.BOLD_TEXT);
         b.setFocusPainted(false);
         b.setOpaque(true);
         b.setBorderPainted(false);
@@ -614,7 +617,7 @@ public class LeaveRequestApproval extends JPanel {
     private void stylePaginationButton(JButton b) {
         b.setBackground(Color.decode("#F1F5F9"));
         b.setForeground(COLOR_TEXT_MAIN);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        b.setFont(SystemTheme.SMALL_TEXT_BOLD);
         b.setFocusPainted(false);
         b.setBorder(new LineBorder(Color.decode("#CBD5E1"), 1, true));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));

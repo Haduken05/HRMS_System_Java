@@ -1,5 +1,6 @@
 package view;
 
+import theme.SystemTheme;
 import newPanel.*;
 import panels.*;
 
@@ -11,14 +12,15 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
 
+    private static final Color BG = SystemTheme.PRIMARY_COLOR;
+    private static final Color TEXT_COLOR = SystemTheme.TEXT_COLOR;
+    
     private ApplyLeave applyLeavePanel;
     private Profile profilePanel;
     private EmployeeManagement empManagement;
     private LeaveRequestApproval leaveRequest;
     private ReportsPanel reportsPanel;
 
-    //private DirectoryPanel directoryPanel;
-    //private ManagementPanel managementPanel;
     private final JButton btnApplyLeave = new JButton("Apply Leave");
     private final JButton btnProfile = new JButton("Profile");
     private final JButton btnEmployee = new JButton("Employee");
@@ -26,7 +28,6 @@ public class MainFrame extends JFrame {
     private final JButton btnReports = new JButton("Reports");
     private final JButton btnExit = new JButton("Exit");
 
-    //private final JButton btnDirectory = new JButton("Directory");
     private final JLabel lblWelcome = new JLabel("Welcome");
     private final JLabel lblLogo = new JLabel();
 
@@ -60,21 +61,24 @@ public class MainFrame extends JFrame {
     private JPanel buildSidebar() {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(new Color(102, 255, 255));
+        sidebar.setBackground(BG);
         sidebar.setPreferredSize(new Dimension(300, 0));
-        sidebar.setBorder(BorderFactory.createEmptyBorder(8, 8, 16, 8));
+        sidebar.setBorder(BorderFactory.createEmptyBorder(15, 8, 16, 8));
 
         lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblWelcome.setForeground(TEXT_COLOR);
         lblWelcome.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblWelcome.setMaximumSize(new Dimension(Integer.MAX_VALUE, 41));
         lblWelcome.setHorizontalAlignment(SwingConstants.CENTER);
 
         sidebar.add(lblWelcome);
 
-        sidebar.add(Box.createRigidArea(new Dimension(0, 6)));
-
+        sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
+        
+        String imgPath = "Hrms_Logo.png";
+        
         try {
-            java.net.URL imgUrl = getClass().getResource("/Image/backgroundremoved_Hrms_logo_2.png");
+            java.net.URL imgUrl = getClass().getResource("/Image/" + imgPath);
             if (imgUrl != null) {
                 lblLogo.setIcon(new ImageIcon(imgUrl));
             }
@@ -87,7 +91,7 @@ public class MainFrame extends JFrame {
         lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblLogo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 132));
         lblLogo.setHorizontalAlignment(SwingConstants.CENTER);
-        lblLogo.setBorder(new javax.swing.border.LineBorder(Color.BLACK, 5, true));
+        lblLogo.setBorder(new javax.swing.border.LineBorder(Color.BLACK, 5, false));
         sidebar.add(lblLogo);
 
         sidebar.add(Box.createRigidArea(new Dimension(0, 8)));
@@ -118,7 +122,6 @@ public class MainFrame extends JFrame {
         leaveRequest = new LeaveRequestApproval();
         reportsPanel = new ReportsPanel();
 
-        // After a successful leave submission, keep Profile credits in sync
         applyLeavePanel.setOnSubmitSuccess(() -> profilePanel.refreshCredits());
         leaveRequest.setOnStatusChanged(() -> applyLeavePanel.refreshCreditBadges());
 
@@ -137,7 +140,6 @@ public class MainFrame extends JFrame {
         btnLeaveRequest.addActionListener(e -> showCard(CARD_LEAVE));
         btnReports.addActionListener(e -> showCard(CARD_REPORTS));
 
-        //btnDirectory.addActionListener(e -> showCard(CARD_DIRECTORY));
         btnExit.addActionListener(e -> {
             int ok = JOptionPane.showConfirmDialog(this,
                     "Do you want to exit the system?", "Confirm Exit",
@@ -166,7 +168,6 @@ public class MainFrame extends JFrame {
         btnLeaveRequest.setVisible(!isEmployee);
         btnReports.setVisible(!isEmployee);
 
-        //btnDirectory.setVisible(!isEmployee);
         showCard(isEmployee ? CARD_APPLY_LEAVE : CARD_LEAVE);
     }
 }

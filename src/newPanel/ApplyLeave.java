@@ -1,6 +1,7 @@
 package newPanel;
 
 import com.toedter.calendar.JDateChooser;
+import theme.SystemTheme;
 import dbquery.LeaveQuery;
 import logic.LeaveLogic;
 
@@ -18,17 +19,19 @@ import java.util.List;
 
 public class ApplyLeave extends JPanel {
 
-    private static final Color BG = Color.decode("#F8FAFC");
-    private static final Color CARD = Color.WHITE;
-    private static final Color FIELD_BG = Color.decode("#E2E8F0");
-    private static final Color TEXT_MAIN = Color.decode("#0F172A");
-    private static final Color TEXT_MUTED = Color.decode("#475569");
-    private static final Color BORDER_CLR = Color.decode("#CBD5E1");
-    private static final Color BTN_SUBMIT = Color.decode("#475569");
-    private static final Color BTN_CANCEL = Color.decode("#F1F5F9");
-    private static final Color BADGE_VL = Color.decode("#DCFCE7");
-    private static final Color BADGE_SL = Color.decode("#FEF9C3");
-    private static final Color BADGE_TEXT = Color.decode("#166534");
+    private static final Color BG = SystemTheme.ACCENT_COLOR;
+
+    private static final Color FIELD_BG = SystemTheme.FIELD_BG;
+    private static final Color TEXT_MAIN = SystemTheme.TEXT_MAIN;
+    private static final Color TEXT_MUTED = SystemTheme.TEXT_MUTED;
+    private static final Color BORDER_CLR = SystemTheme.BORDER_COLOR;
+    
+    private static final Color BTN_SUBMIT = SystemTheme.BTN_YES;
+    private static final Color BTN_CANCEL = SystemTheme.BTN_NO;
+    
+    private static final Color BADGE_VL = SystemTheme.BADGE_VL;
+    private static final Color BADGE_SL = SystemTheme.BADGE_SL;
+    private static final Color BADGE_TEXT = SystemTheme.BADGE_TEXT;
 
     private static final String UPLOAD_DIR = "uploads/leave_docs/";
 
@@ -67,12 +70,12 @@ public class ApplyLeave extends JPanel {
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
         JLabel titleLabel = new JLabel("Apply Leave");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titleLabel.setFont(SystemTheme.HEADER_TEXT);
         titleLabel.setForeground(TEXT_MAIN);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel breadcrumb = new JLabel("Dashboard / Apply Leave");
-        breadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        breadcrumb.setFont(SystemTheme.NORMAL_TEXT);
         breadcrumb.setForeground(TEXT_MUTED);
         breadcrumb.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -249,7 +252,7 @@ public class ApplyLeave extends JPanel {
                 + "<li>Sick Leave filed after the leave requires a medical certificate if 2+ days absent.</li>"
                 + "<li>Leave days are deducted from your credits upon submission.</li>"
                 + "</ul></html>");
-        rulesText.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        rulesText.setFont(SystemTheme.NORMAL_TEXT);
         rulesText.setForeground(TEXT_MAIN);
         rulesBox.add(rulesText);
 
@@ -261,7 +264,7 @@ public class ApplyLeave extends JPanel {
         buttonRow.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         btnCancel = new JButton("Cancel");
-        styleButton(btnCancel, BTN_CANCEL, TEXT_MAIN);
+        styleButton(btnCancel, BTN_CANCEL, Color.WHITE);
         btnCancel.setBorder(new LineBorder(BORDER_CLR, 1, true));
 
         btnSubmit = new JButton("Submit Request");
@@ -295,7 +298,7 @@ public class ApplyLeave extends JPanel {
                 + "or <u>click to browse</u><br><br>"
                 + "<font color='#94A3B8'>PDF, JPG, PNG — max 5 MB</font></center></html>",
                 SwingConstants.CENTER);
-        dropHint.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        dropHint.setFont(SystemTheme.NORMAL_TEXT);
         dropHint.setForeground(TEXT_MUTED);
         dropHint.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -318,11 +321,11 @@ public class ApplyLeave extends JPanel {
         southStrip.setVisible(false);
 
         fileNameLabel = new JLabel("", SwingConstants.LEFT);
-        fileNameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        fileNameLabel.setFont(SystemTheme.NORMAL_TEXT);
         fileNameLabel.setForeground(TEXT_MUTED);
 
         btnClearFile = new JButton("Remove File");
-        btnClearFile.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnClearFile.setFont(SystemTheme.NORMAL_TEXT);
         btnClearFile.setForeground(Color.decode("#DC2626"));
         btnClearFile.setBackground(Color.decode("#FEF2F2"));
         btnClearFile.setBorder(BorderFactory.createCompoundBorder(
@@ -607,7 +610,7 @@ public class ApplyLeave extends JPanel {
 
     private JLabel createBadge(String text, Color bg) {
         JLabel badge = new JLabel("  " + text + "  ");
-        badge.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        badge.setFont(SystemTheme.BOLD_TEXT);
         badge.setBackground(bg);
         badge.setForeground(BADGE_TEXT);
         badge.setOpaque(true);
@@ -619,7 +622,7 @@ public class ApplyLeave extends JPanel {
 
     private JLabel createFieldLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setFont(SystemTheme.BOLD_TEXT);
         label.setForeground(TEXT_MAIN);
         label.setBorder(new EmptyBorder(0, 0, 6, 0));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -628,7 +631,7 @@ public class ApplyLeave extends JPanel {
 
     private JTextField createStyledTextField() {
         JTextField tf = new JTextField();
-        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tf.setFont(SystemTheme.NORMAL_TEXT);
         tf.setBackground(FIELD_BG);
         tf.setForeground(TEXT_MAIN);
         tf.setBorder(BorderFactory.createCompoundBorder(
@@ -642,7 +645,7 @@ public class ApplyLeave extends JPanel {
 
     private JComboBox<String> createStyledComboBox(String[] items) {
         JComboBox<String> cb = new JComboBox<>(items);
-        cb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cb.setFont(SystemTheme.NORMAL_TEXT);
         cb.setBackground(FIELD_BG);
         cb.setForeground(TEXT_MAIN);
         cb.setPreferredSize(new Dimension(0, 40));
@@ -653,7 +656,7 @@ public class ApplyLeave extends JPanel {
 
     private JDateChooser createStyledDateChooser() {
         JDateChooser dc = new JDateChooser();
-        dc.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        dc.setFont(SystemTheme.NORMAL_TEXT);
         dc.setBackground(FIELD_BG);
         dc.setPreferredSize(new Dimension(0, 40));
         dc.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
@@ -668,7 +671,7 @@ public class ApplyLeave extends JPanel {
     private void styleButton(JButton btn, Color bg, Color fg) {
         btn.setBackground(bg);
         btn.setForeground(fg);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFont(SystemTheme.BOLD_TEXT);
         btn.setPreferredSize(new Dimension(160, 45));
         btn.setFocusPainted(false);
         btn.setOpaque(true);

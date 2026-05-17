@@ -1,5 +1,7 @@
 package config;
 
+import theme.SystemTheme;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.sql.*;
@@ -11,9 +13,9 @@ public class LoginFrame extends javax.swing.JFrame {
 
     private static final Logger logger = Logger.getLogger(LoginFrame.class.getName());
 
-    private static final Color COLOR_PRIMARY_BRAND = new Color(0xffffff);
-    private static final Color COLOR_BG_FORM = new Color(0x0C5868);             
-    private static final Color COLOR_TEXT_MAIN = new Color(0xffffff); 
+    private static final Color COLOR_PRIMARY_BRAND = SystemTheme.ACCENT_COLOR;
+    private static final Color COLOR_BG_FORM = SystemTheme.PRIMARY_COLOR;             
+    private static final Color COLOR_TEXT_MAIN = SystemTheme.TEXT_COLOR; 
 
     private JPanel jPanel1; 
     private JPanel jPanel2; 

@@ -1,9 +1,9 @@
 package newPanel;
 
+import theme.SystemTheme;
 import dataObject.Employee;
 import dataObject.LeaveRequestEntity;
 import dbquery.LeaveQuery;
-import logic.LeaveRequestLogic;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -19,20 +19,21 @@ import java.util.List;
 
 public class Profile extends JPanel {
 
-    private Color COLOR_BG            = Color.decode("#F8FAFC");
-    private Color COLOR_CARD          = Color.WHITE;
-    private Color COLOR_FIELD_BG      = Color.decode("#E2E8F0");
-    private Color COLOR_TEXT_MAIN     = Color.decode("#0F172A");
-    private Color COLOR_TEXT_MUTED    = Color.decode("#64748B");
-    private Color COLOR_SUCCESS       = Color.decode("#10B981");
-    private Color COLOR_ACCENT        = Color.decode("#0EA5E9");
-    private Color COLOR_WARNING       = Color.decode("#F59E0B");
-    private Color COLOR_DANGER        = Color.decode("#EF4444");
-    private Color COLOR_BTN_DARK      = Color.decode("#0F172A");
-    private Color COLOR_ROW_SELECT    = Color.decode("#1E3A5F");  
-    private Color COLOR_SL_BADGE      = Color.decode("#FEF9C3");
-    private Color COLOR_VL_BADGE      = Color.decode("#DCFCE7");
-    private Color COLOR_TAB_UNDERLINE = Color.decode("#0F172A");
+    private final Color COLOR_BG = SystemTheme.CARD_BG;
+    private final Color COLOR_CARD = Color.WHITE;
+    private final Color COLOR_FIELD_BG = SystemTheme.FIELD_BG;
+    private final Color COLOR_TEXT_MAIN = SystemTheme.TEXT_MAIN;
+    private final Color COLOR_TEXT_MUTED = SystemTheme.TEXT_MUTED;
+    private final Color COLOR_SUBTEXT = SystemTheme.ACCENT_COLOR;
+    private final Color COLOR_TEXT_WHITE = SystemTheme.TEXT_COLOR;
+    private final Color COLOR_SUCCESS = SystemTheme.BTN_YES;
+    private final Color COLOR_ACCENT = SystemTheme.TEXT_INDICATOR;
+    private final Color COLOR_DANGER = SystemTheme.BTN_NO;
+    private final Color COLOR_BTN_DARK = SystemTheme.BTN_DARK;
+    private final Color COLOR_ROW_SELECT = SystemTheme.ROW_SELECTED;
+    private final Color COLOR_SL_BADGE = SystemTheme.BADGE_SL;
+    private final Color COLOR_VL_BADGE = SystemTheme.BADGE_VL;
+    private final Color COLOR_TAB_UNDERLINE = SystemTheme.BTN_DARK;
 
     private static final SimpleDateFormat DATE_FMT
             = new SimpleDateFormat("MMMM d, yyyy", java.util.Locale.ENGLISH);
@@ -73,12 +74,12 @@ public class Profile extends JPanel {
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
         JLabel titleLabel = new JLabel("Profile");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titleLabel.setFont(SystemTheme.HEADER_TEXT);
         titleLabel.setForeground(COLOR_TEXT_MAIN);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel breadcrumb = new JLabel("Dashboard / Profile");
-        breadcrumb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        breadcrumb.setFont(SystemTheme.NORMAL_TEXT);
         breadcrumb.setForeground(COLOR_TEXT_MUTED);
         breadcrumb.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -126,7 +127,7 @@ public class Profile extends JPanel {
         leftColumn.add(lblAvatarCircle, gbc);
 
         lblProfileName = new JLabel("—", SwingConstants.CENTER);
-        lblProfileName.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblProfileName.setFont(SystemTheme.LARGE_TEXT_BOLD);
         lblProfileName.setForeground(COLOR_TEXT_MAIN);
         gbc.gridy = 1;
         gbc.insets = new Insets(15, 0, 0, 0);
@@ -134,7 +135,7 @@ public class Profile extends JPanel {
         leftColumn.add(lblProfileName, gbc);
 
         lblEmployeeID = new JLabel("EMP000", SwingConstants.CENTER);
-        lblEmployeeID.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblEmployeeID.setFont(SystemTheme.NORMAL_TEXT);
         lblEmployeeID.setForeground(COLOR_TEXT_MUTED);
         gbc.gridy = 2;
         gbc.insets = new Insets(4, 0, 25, 0);
@@ -166,9 +167,9 @@ public class Profile extends JPanel {
         tabsHeader.setBorder(BorderFactory.createMatteBorder(
                 0, 0, 1, 0, Color.decode("#E2E8F0")));
 
-        tabPersonalInfo   = makeTab("Personal Information");
+        tabPersonalInfo = makeTab("Personal Information");
         tabApprovedLeaves = makeTab("Approved Leaves");
-        tabPendingLeaves  = makeTab("Pending Leaves");
+        tabPendingLeaves = makeTab("Pending Leaves");
         tabChangePassword = makeTab("Change Password");
 
         setTabActive(tabPersonalInfo);
@@ -192,12 +193,12 @@ public class Profile extends JPanel {
         personalGrid.setBackground(COLOR_CARD);
         personalGrid.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        txtFullName   = createReadOnlyField();
+        txtFullName = createReadOnlyField();
         txtDepartment = createReadOnlyField();
-        txtPosition   = createReadOnlyField();
-        txtPhone      = createReadOnlyField();
-        txtHireDate   = createReadOnlyField();
-        txtRole       = createReadOnlyField();
+        txtPosition = createReadOnlyField();
+        txtPhone = createReadOnlyField();
+        txtHireDate = createReadOnlyField();
+        txtRole = createReadOnlyField();
 
         personalGrid.add(createFieldWrapper("Full Name", txtFullName));
         personalGrid.add(createFieldWrapper("Department", txtDepartment));
@@ -209,7 +210,10 @@ public class Profile extends JPanel {
         // CARD 2 - Approved Leaves
         String[] leaveCols = {"Request ID", "Type", "Start Date", "End Date", "Duration"};
         approvedTableModel = new DefaultTableModel(leaveCols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         approvedTable = buildLeaveTable(approvedTableModel, false);
         JScrollPane approvedScroll = new JScrollPane(approvedTable);
@@ -223,7 +227,10 @@ public class Profile extends JPanel {
         // CARD 3 - Pending Leaves
         String[] pendingCols = {"Request ID", "Type", "Start Date", "End Date", "Duration", "Status"};
         pendingTableModel = new DefaultTableModel(pendingCols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         pendingTable = buildLeaveTable(pendingTableModel, true);
         JScrollPane pendingScroll = new JScrollPane(pendingTable);
@@ -240,7 +247,7 @@ public class Profile extends JPanel {
         pwdGrid.setBorder(new EmptyBorder(30, 30, 30, 200));
 
         txtCurrentPwd = createStyledPasswordField();
-        txtNewPwd     = createStyledPasswordField();
+        txtNewPwd = createStyledPasswordField();
         txtConfirmPwd = createStyledPasswordField();
 
         pwdGrid.add(createFieldWrapper("Current Password", txtCurrentPwd));
@@ -248,9 +255,9 @@ public class Profile extends JPanel {
         pwdGrid.add(createFieldWrapper("Confirm Password", txtConfirmPwd));
 
         cardsPanel.add(personalGrid, "PERSONAL");
-        cardsPanel.add(approvedCard,  "APPROVED");
-        cardsPanel.add(pendingCard,   "PENDING");
-        cardsPanel.add(pwdGrid,       "PASSWORD");
+        cardsPanel.add(approvedCard, "APPROVED");
+        cardsPanel.add(pendingCard, "PENDING");
+        cardsPanel.add(pwdGrid, "PASSWORD");
 
         rightColumn.add(cardsPanel, BorderLayout.CENTER);
 
@@ -263,7 +270,7 @@ public class Profile extends JPanel {
         formFooter.add(btnSaveChanges);
         rightColumn.add(formFooter, BorderLayout.SOUTH);
 
-        mainSplitCard.add(leftColumn,  BorderLayout.WEST);
+        mainSplitCard.add(leftColumn, BorderLayout.WEST);
         mainSplitCard.add(rightColumn, BorderLayout.CENTER);
         add(mainSplitCard, BorderLayout.CENTER);
 
@@ -318,7 +325,9 @@ public class Profile extends JPanel {
     }
 
     public void refreshCredits() {
-        if (currentEmpId < 0) return;
+        if (currentEmpId < 0) {
+            return;
+        }
         int vl = LeaveQuery.getVLCredits(currentEmpId);
         int sl = LeaveQuery.getSLCredits(currentEmpId);
         lblVacationLeave.setText(vl >= 0 ? String.valueOf(vl) : "—");
@@ -327,13 +336,15 @@ public class Profile extends JPanel {
 
     private void loadApprovedLeaves() {
         approvedTableModel.setRowCount(0);
-        if (currentEmpId < 0) return;
+        if (currentEmpId < 0) {
+            return;
+        }
 
         List<LeaveRequestEntity> leaves = LeaveQuery.getApprovedLeaves(currentEmpId);
         for (LeaveRequestEntity e : leaves) {
-            String start    = e.getStartDate() != null ? DATE_FMT.format(e.getStartDate()) : "—";
-            String end      = e.getEndDate()   != null ? DATE_FMT.format(e.getEndDate())   : "—";
-            long   duration = calcDays(e.getStartDate(), e.getEndDate());
+            String start = e.getStartDate() != null ? DATE_FMT.format(e.getStartDate()) : "—";
+            String end = e.getEndDate() != null ? DATE_FMT.format(e.getEndDate()) : "—";
+            long duration = calcDays(e.getStartDate(), e.getEndDate());
             approvedTableModel.addRow(new Object[]{
                 e.getRequestId(),
                 e.getLeaveType().equals("VL") ? "Vacation Leave" : "Sick Leave",
@@ -345,13 +356,15 @@ public class Profile extends JPanel {
 
     private void loadPendingLeaves() {
         pendingTableModel.setRowCount(0);
-        if (currentEmpId < 0) return;
+        if (currentEmpId < 0) {
+            return;
+        }
 
         List<LeaveRequestEntity> leaves = LeaveQuery.getPendingLeavesByEmployee(currentEmpId);
         for (LeaveRequestEntity e : leaves) {
-            String start    = e.getStartDate() != null ? DATE_FMT.format(e.getStartDate()) : "—";
-            String end      = e.getEndDate()   != null ? DATE_FMT.format(e.getEndDate())   : "—";
-            long   duration = calcDays(e.getStartDate(), e.getEndDate());
+            String start = e.getStartDate() != null ? DATE_FMT.format(e.getStartDate()) : "—";
+            String end = e.getEndDate() != null ? DATE_FMT.format(e.getEndDate()) : "—";
+            long duration = calcDays(e.getStartDate(), e.getEndDate());
             pendingTableModel.addRow(new Object[]{
                 e.getRequestId(),
                 e.getLeaveType().equals("VL") ? "Vacation Leave" : "Sick Leave",
@@ -374,17 +387,21 @@ public class Profile extends JPanel {
         setTabInactive(tabPendingLeaves);
         setTabInactive(tabChangePassword);
         switch (card) {
-            case "PERSONAL" -> setTabActive(tabPersonalInfo);
-            case "APPROVED" -> setTabActive(tabApprovedLeaves);
-            case "PENDING"  -> setTabActive(tabPendingLeaves);
-            case "PASSWORD" -> setTabActive(tabChangePassword);
+            case "PERSONAL" ->
+                setTabActive(tabPersonalInfo);
+            case "APPROVED" ->
+                setTabActive(tabApprovedLeaves);
+            case "PENDING" ->
+                setTabActive(tabPendingLeaves);
+            case "PASSWORD" ->
+                setTabActive(tabChangePassword);
         }
         cardLayout.show(cardsPanel, card);
     }
 
     private JLabel makeTab(String text) {
         JLabel lbl = new JLabel(text);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lbl.setFont(SystemTheme.BOLD_TEXT);
         lbl.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return lbl;
     }
@@ -401,10 +418,9 @@ public class Profile extends JPanel {
         label.setBorder(new EmptyBorder(15, 5, 15, 5));
     }
 
-
     private JTable buildLeaveTable(DefaultTableModel model, boolean hasPendingStatus) {
         JTable table = new JTable(model);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        table.setFont(SystemTheme.NORMAL_TEXT);
         table.setRowHeight(36);
         table.setGridColor(Color.decode("#F1F5F9"));
 
@@ -413,7 +429,7 @@ public class Profile extends JPanel {
         table.setShowVerticalLines(false);
 
         JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        header.setFont(SystemTheme.BOLD_TEXT);
         header.setBackground(Color.decode("#F8FAFC"));
         header.setForeground(COLOR_TEXT_MUTED);
         header.setReorderingAllowed(false);
@@ -432,14 +448,19 @@ public class Profile extends JPanel {
                 } else if (hasPendingStatus && c == model.getColumnCount() - 1 && v != null) {
 
                     String val = v.toString();
-                    if      (val.equalsIgnoreCase("Pending"))     setForeground(COLOR_ACCENT);
-                    else if (val.equalsIgnoreCase("Approved"))    setForeground(COLOR_SUCCESS);
-                    else if (val.equalsIgnoreCase("Disapproved")) setForeground(COLOR_DANGER);
-                    else                                           setForeground(COLOR_TEXT_MAIN);
-                    setFont(new Font("Segoe UI", Font.BOLD, 13));
+                    if (val.equalsIgnoreCase("Pending")) {
+                        setForeground(COLOR_ACCENT);
+                    } else if (val.equalsIgnoreCase("Approved")) {
+                        setForeground(COLOR_SUCCESS);
+                    } else if (val.equalsIgnoreCase("Disapproved")) {
+                        setForeground(COLOR_DANGER);
+                    } else {
+                        setForeground(COLOR_TEXT_MAIN);
+                    }
+                    setFont(SystemTheme.BOLD_TEXT);
                 } else {
                     setForeground(COLOR_TEXT_MAIN);
-                    setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                    setFont(SystemTheme.NORMAL_TEXT);
                 }
                 return this;
             }
@@ -467,11 +488,11 @@ public class Profile extends JPanel {
         container.setPreferredSize(new Dimension(200, 70));
 
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        titleLabel.setForeground(COLOR_TEXT_MUTED);
+        titleLabel.setFont(SystemTheme.SMALL_TEXT_BOLD);
+        titleLabel.setForeground(COLOR_SUBTEXT);
 
-        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        valueLabel.setForeground(COLOR_TEXT_MAIN);
+        valueLabel.setFont(SystemTheme.BIG_TEXT_BOLD);
+        valueLabel.setForeground(COLOR_TEXT_WHITE);
 
         container.add(titleLabel, BorderLayout.NORTH);
         container.add(valueLabel, BorderLayout.CENTER);
@@ -480,7 +501,7 @@ public class Profile extends JPanel {
 
     private JTextField createReadOnlyField() {
         JTextField tf = new JTextField();
-        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tf.setFont(SystemTheme.NORMAL_TEXT);
         tf.setBackground(COLOR_FIELD_BG);
         tf.setForeground(COLOR_TEXT_MAIN);
         tf.setEditable(false);
@@ -493,7 +514,7 @@ public class Profile extends JPanel {
 
     private JPasswordField createStyledPasswordField() {
         JPasswordField pf = new JPasswordField();
-        pf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        pf.setFont(SystemTheme.NORMAL_TEXT);
         pf.setBackground(COLOR_CARD);
         pf.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(Color.decode("#CBD5E1"), 1, true),
@@ -507,7 +528,7 @@ public class Profile extends JPanel {
         wrap.setBackground(COLOR_CARD);
         wrap.setLayout(new BoxLayout(wrap, BoxLayout.Y_AXIS));
         JLabel lbl = new JLabel(labelText);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lbl.setFont(SystemTheme.BOLD_TEXT);
         lbl.setForeground(COLOR_TEXT_MAIN);
         lbl.setBorder(new EmptyBorder(0, 0, 6, 0));
         lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -520,7 +541,7 @@ public class Profile extends JPanel {
     private void styleButton(JButton btn, Color bg, Color fg) {
         btn.setBackground(bg);
         btn.setForeground(fg);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFont(SystemTheme.BOLD_TEXT);
         btn.setFocusPainted(false);
         btn.setOpaque(true);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
