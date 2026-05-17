@@ -19,49 +19,55 @@ import java.util.List;
 
 public class Profile extends JPanel {
 
-    private final Color COLOR_BG = Color.decode("#F8FAFC");
-    private final Color COLOR_CARD = Color.WHITE;
-    private final Color COLOR_FIELD_BG = Color.decode("#E2E8F0");
-    private final Color COLOR_TEXT_MAIN = Color.decode("#0F172A");
-    private final Color COLOR_TEXT_MUTED = Color.decode("#64748B");
-    private final Color COLOR_SUCCESS = Color.decode("#10B981");
-    private final Color COLOR_ACCENT = Color.decode("#0EA5E9");
-    private final Color COLOR_BTN_DARK = Color.decode("#000000");
+    private Color COLOR_BG            = Color.decode("#F8FAFC");
+    private Color COLOR_CARD          = Color.WHITE;
+    private Color COLOR_FIELD_BG      = Color.decode("#E2E8F0");
+    private Color COLOR_TEXT_MAIN     = Color.decode("#0F172A");
+    private Color COLOR_TEXT_MUTED    = Color.decode("#64748B");
+    private Color COLOR_SUCCESS       = Color.decode("#10B981");
+    private Color COLOR_ACCENT        = Color.decode("#0EA5E9");
+    private Color COLOR_WARNING       = Color.decode("#F59E0B");
+    private Color COLOR_DANGER        = Color.decode("#EF4444");
+    private Color COLOR_BTN_DARK      = Color.decode("#0F172A");
+    private Color COLOR_ROW_SELECT    = Color.decode("#1E3A5F");  
+    private Color COLOR_SL_BADGE      = Color.decode("#FEF9C3");
+    private Color COLOR_VL_BADGE      = Color.decode("#DCFCE7");
+    private Color COLOR_TAB_UNDERLINE = Color.decode("#0F172A");
 
     private static final SimpleDateFormat DATE_FMT
             = new SimpleDateFormat("MMMM d, yyyy", java.util.Locale.ENGLISH);
 
     private JLabel lblAvatarCircle, lblProfileName, lblEmployeeID;
     private JLabel lblSickLeave, lblVacationLeave;
-    private JLabel tabPersonalInfo, tabApprovedLeaves, tabChangePassword;
+    private JLabel tabPersonalInfo, tabApprovedLeaves, tabPendingLeaves, tabChangePassword;
     private JPanel cardsPanel;
     private CardLayout cardLayout;
 
-    // Personal Info
     private JTextField txtFullName, txtDepartment, txtPosition,
             txtPhone, txtHireDate, txtRole;
 
-    // Password
     private JPasswordField txtCurrentPwd, txtNewPwd, txtConfirmPwd;
 
-    // Approved leaves table
-    private DefaultTableModel leaveTableModel;
+    private DefaultTableModel approvedTableModel;
+    private DefaultTableModel pendingTableModel;
 
     private JButton btnSaveChanges;
 
     private int currentEmpId = -1;
+
+    private JTable approvedTable;
+    private JTable pendingTable;
 
     public Profile() {
         initComponents();
     }
 
     private void initComponents() {
-        setPreferredSize(new Dimension(900, 750));
+        setPreferredSize(new Dimension(900, 780));
         setBackground(COLOR_BG);
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(30, 40, 30, 40));
 
-        // Header
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(COLOR_BG);
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
@@ -79,7 +85,8 @@ public class Profile extends JPanel {
         headerPanel.add(titleLabel);
         headerPanel.add(Box.createVerticalStrut(4));
         headerPanel.add(breadcrumb);
-        headerPanel.add(Box.createVerticalStrut(25));
+        headerPanel.add(Box.createVerticalStrut(12));
+
         add(headerPanel, BorderLayout.NORTH);
 
         // Main card
@@ -104,7 +111,7 @@ public class Profile extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.decode("#E2E8F0"));
+                g2.setColor(COLOR_FIELD_BG);
                 g2.fillOval(0, 0, getWidth() - 1, getHeight() - 1);
                 g2.dispose();
                 super.paintComponent(g);
@@ -134,15 +141,13 @@ public class Profile extends JPanel {
         leftColumn.add(lblEmployeeID, gbc);
 
         lblSickLeave = new JLabel("—");
-        JPanel pnlSL = createCreditBox("Sick Leave Credits", lblSickLeave,
-                Color.decode("#FEF9C3"));
+        JPanel pnlSL = createCreditBox("Sick Leave Credits", lblSickLeave, COLOR_SL_BADGE);
         gbc.gridy = 3;
         gbc.insets = new Insets(0, 0, 12, 0);
         leftColumn.add(pnlSL, gbc);
 
         lblVacationLeave = new JLabel("—");
-        JPanel pnlVL = createCreditBox("Vacation Leave Credits", lblVacationLeave,
-                Color.decode("#DCFCE7"));
+        JPanel pnlVL = createCreditBox("Vacation Leave Credits", lblVacationLeave, COLOR_VL_BADGE);
         gbc.gridy = 4;
         gbc.insets = new Insets(0, 0, 0, 0);
         gbc.weighty = 1.0;
@@ -155,22 +160,25 @@ public class Profile extends JPanel {
         rightColumn.setBorder(BorderFactory.createMatteBorder(
                 0, 1, 0, 0, Color.decode("#CBD5E1")));
 
-        // Tab strip - three tabs
+        // Tab strip - four tabs
         JPanel tabsHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
         tabsHeader.setBackground(COLOR_CARD);
         tabsHeader.setBorder(BorderFactory.createMatteBorder(
                 0, 0, 1, 0, Color.decode("#E2E8F0")));
 
-        tabPersonalInfo = makeTab("Personal Information");
+        tabPersonalInfo   = makeTab("Personal Information");
         tabApprovedLeaves = makeTab("Approved Leaves");
+        tabPendingLeaves  = makeTab("Pending Leaves");
         tabChangePassword = makeTab("Change Password");
 
         setTabActive(tabPersonalInfo);
         setTabInactive(tabApprovedLeaves);
+        setTabInactive(tabPendingLeaves);
         setTabInactive(tabChangePassword);
 
         tabsHeader.add(tabPersonalInfo);
         tabsHeader.add(tabApprovedLeaves);
+        tabsHeader.add(tabPendingLeaves);
         tabsHeader.add(tabChangePassword);
         rightColumn.add(tabsHeader, BorderLayout.NORTH);
 
@@ -179,17 +187,17 @@ public class Profile extends JPanel {
         cardsPanel = new JPanel(cardLayout);
         cardsPanel.setBackground(COLOR_CARD);
 
-        // CARD 1 - Personal Info (6 fields, read-only)
+        // CARD 1 - Personal Info
         JPanel personalGrid = new JPanel(new GridLayout(3, 2, 25, 20));
         personalGrid.setBackground(COLOR_CARD);
         personalGrid.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        txtFullName = createReadOnlyField();
+        txtFullName   = createReadOnlyField();
         txtDepartment = createReadOnlyField();
-        txtPosition = createReadOnlyField();
-        txtPhone = createReadOnlyField();
-        txtHireDate = createReadOnlyField();
-        txtRole = createReadOnlyField();
+        txtPosition   = createReadOnlyField();
+        txtPhone      = createReadOnlyField();
+        txtHireDate   = createReadOnlyField();
+        txtRole       = createReadOnlyField();
 
         personalGrid.add(createFieldWrapper("Full Name", txtFullName));
         personalGrid.add(createFieldWrapper("Department", txtDepartment));
@@ -198,30 +206,41 @@ public class Profile extends JPanel {
         personalGrid.add(createFieldWrapper("Hire Date", txtHireDate));
         personalGrid.add(createFieldWrapper("Role", txtRole));
 
-        // CARD 2 - Approved Leaves table
+        // CARD 2 - Approved Leaves
         String[] leaveCols = {"Request ID", "Type", "Start Date", "End Date", "Duration"};
-        leaveTableModel = new DefaultTableModel(leaveCols, 0) {
-            @Override
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
+        approvedTableModel = new DefaultTableModel(leaveCols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        JTable leaveTable = buildLeaveTable();
-        JScrollPane leaveScroll = new JScrollPane(leaveTable);
-        leaveScroll.setBorder(new EmptyBorder(20, 30, 20, 30));
-        leaveScroll.getViewport().setBackground(COLOR_CARD);
+        approvedTable = buildLeaveTable(approvedTableModel, false);
+        JScrollPane approvedScroll = new JScrollPane(approvedTable);
+        approvedScroll.setBorder(new EmptyBorder(20, 30, 20, 30));
+        approvedScroll.getViewport().setBackground(COLOR_CARD);
 
-        JPanel leaveCard = new JPanel(new BorderLayout());
-        leaveCard.setBackground(COLOR_CARD);
-        leaveCard.add(leaveScroll, BorderLayout.CENTER);
+        JPanel approvedCard = new JPanel(new BorderLayout());
+        approvedCard.setBackground(COLOR_CARD);
+        approvedCard.add(approvedScroll, BorderLayout.CENTER);
 
-        // CARD 3 - Change Password
+        // CARD 3 - Pending Leaves
+        String[] pendingCols = {"Request ID", "Type", "Start Date", "End Date", "Duration", "Status"};
+        pendingTableModel = new DefaultTableModel(pendingCols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        pendingTable = buildLeaveTable(pendingTableModel, true);
+        JScrollPane pendingScroll = new JScrollPane(pendingTable);
+        pendingScroll.setBorder(new EmptyBorder(20, 30, 20, 30));
+        pendingScroll.getViewport().setBackground(COLOR_CARD);
+
+        JPanel pendingCard = new JPanel(new BorderLayout());
+        pendingCard.setBackground(COLOR_CARD);
+        pendingCard.add(pendingScroll, BorderLayout.CENTER);
+
+        // CARD 4 - Change Password
         JPanel pwdGrid = new JPanel(new GridLayout(3, 1, 0, 20));
         pwdGrid.setBackground(COLOR_CARD);
         pwdGrid.setBorder(new EmptyBorder(30, 30, 30, 200));
 
         txtCurrentPwd = createStyledPasswordField();
-        txtNewPwd = createStyledPasswordField();
+        txtNewPwd     = createStyledPasswordField();
         txtConfirmPwd = createStyledPasswordField();
 
         pwdGrid.add(createFieldWrapper("Current Password", txtCurrentPwd));
@@ -229,8 +248,9 @@ public class Profile extends JPanel {
         pwdGrid.add(createFieldWrapper("Confirm Password", txtConfirmPwd));
 
         cardsPanel.add(personalGrid, "PERSONAL");
-        cardsPanel.add(leaveCard, "LEAVES");
-        cardsPanel.add(pwdGrid, "PASSWORD");
+        cardsPanel.add(approvedCard,  "APPROVED");
+        cardsPanel.add(pendingCard,   "PENDING");
+        cardsPanel.add(pwdGrid,       "PASSWORD");
 
         rightColumn.add(cardsPanel, BorderLayout.CENTER);
 
@@ -243,7 +263,7 @@ public class Profile extends JPanel {
         formFooter.add(btnSaveChanges);
         rightColumn.add(formFooter, BorderLayout.SOUTH);
 
-        mainSplitCard.add(leftColumn, BorderLayout.WEST);
+        mainSplitCard.add(leftColumn,  BorderLayout.WEST);
         mainSplitCard.add(rightColumn, BorderLayout.CENTER);
         add(mainSplitCard, BorderLayout.CENTER);
 
@@ -256,8 +276,15 @@ public class Profile extends JPanel {
         });
         tabApprovedLeaves.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                activateTab("LEAVES");
+                activateTab("APPROVED");
                 loadApprovedLeaves();
+                btnSaveChanges.setVisible(false);
+            }
+        });
+        tabPendingLeaves.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                activateTab("PENDING");
+                loadPendingLeaves();
                 btnSaveChanges.setVisible(false);
             }
         });
@@ -269,12 +296,10 @@ public class Profile extends JPanel {
             }
         });
 
-        // Hide save button initially - personal info is read-only
         btnSaveChanges.setVisible(false);
     }
 
-    // Public API
-  
+    //  Public API
     public void loadProfile(Employee emp) {
         currentEmpId = emp.empId;
 
@@ -292,41 +317,47 @@ public class Profile extends JPanel {
         lblSickLeave.setText(String.valueOf(emp.slCredits));
     }
 
-    /**
-     * Reloads credits from DB — call this after a leave is submitted so the
-     * profile stays in sync without a full re-login.
-     */
     public void refreshCredits() {
-        if (currentEmpId < 0) {
-            return;
-        }
+        if (currentEmpId < 0) return;
         int vl = LeaveQuery.getVLCredits(currentEmpId);
         int sl = LeaveQuery.getSLCredits(currentEmpId);
         lblVacationLeave.setText(vl >= 0 ? String.valueOf(vl) : "—");
         lblSickLeave.setText(sl >= 0 ? String.valueOf(sl) : "—");
     }
 
-    // Approved leaves
     private void loadApprovedLeaves() {
-        leaveTableModel.setRowCount(0);
-        if (currentEmpId < 0) {
-            return;
-        }
+        approvedTableModel.setRowCount(0);
+        if (currentEmpId < 0) return;
 
         List<LeaveRequestEntity> leaves = LeaveQuery.getApprovedLeaves(currentEmpId);
-
         for (LeaveRequestEntity e : leaves) {
-
-            String start = e.getStartDate() != null ? DATE_FMT.format(e.getStartDate()) : "—";
-            String end = e.getEndDate() != null ? DATE_FMT.format(e.getEndDate()) : "—";
-            long duration = calcDays(e.getStartDate(), e.getEndDate());
-
-            leaveTableModel.addRow(new Object[]{
+            String start    = e.getStartDate() != null ? DATE_FMT.format(e.getStartDate()) : "—";
+            String end      = e.getEndDate()   != null ? DATE_FMT.format(e.getEndDate())   : "—";
+            long   duration = calcDays(e.getStartDate(), e.getEndDate());
+            approvedTableModel.addRow(new Object[]{
                 e.getRequestId(),
                 e.getLeaveType().equals("VL") ? "Vacation Leave" : "Sick Leave",
-                start,
-                end,
+                start, end,
                 duration + (duration == 1 ? " day" : " days")
+            });
+        }
+    }
+
+    private void loadPendingLeaves() {
+        pendingTableModel.setRowCount(0);
+        if (currentEmpId < 0) return;
+
+        List<LeaveRequestEntity> leaves = LeaveQuery.getPendingLeavesByEmployee(currentEmpId);
+        for (LeaveRequestEntity e : leaves) {
+            String start    = e.getStartDate() != null ? DATE_FMT.format(e.getStartDate()) : "—";
+            String end      = e.getEndDate()   != null ? DATE_FMT.format(e.getEndDate())   : "—";
+            long   duration = calcDays(e.getStartDate(), e.getEndDate());
+            pendingTableModel.addRow(new Object[]{
+                e.getRequestId(),
+                e.getLeaveType().equals("VL") ? "Vacation Leave" : "Sick Leave",
+                start, end,
+                duration + (duration == 1 ? " day" : " days"),
+                "Pending"
             });
         }
     }
@@ -336,19 +367,17 @@ public class Profile extends JPanel {
                 .toDays(b.getTime() - a.getTime()) + 1;
     }
 
-    // Tab helpers
+    //  Tab helpers
     private void activateTab(String card) {
         setTabInactive(tabPersonalInfo);
         setTabInactive(tabApprovedLeaves);
+        setTabInactive(tabPendingLeaves);
         setTabInactive(tabChangePassword);
-        if (card.equals("PERSONAL")) {
-            setTabActive(tabPersonalInfo);
-        }
-        if (card.equals("LEAVES")) {
-            setTabActive(tabApprovedLeaves);
-        }
-        if (card.equals("PASSWORD")) {
-            setTabActive(tabChangePassword);
+        switch (card) {
+            case "PERSONAL" -> setTabActive(tabPersonalInfo);
+            case "APPROVED" -> setTabActive(tabApprovedLeaves);
+            case "PENDING"  -> setTabActive(tabPendingLeaves);
+            case "PASSWORD" -> setTabActive(tabChangePassword);
         }
         cardLayout.show(cardsPanel, card);
     }
@@ -363,7 +392,7 @@ public class Profile extends JPanel {
     private void setTabActive(JLabel label) {
         label.setForeground(COLOR_TEXT_MAIN);
         label.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 3, 0, COLOR_TEXT_MAIN),
+                BorderFactory.createMatteBorder(0, 0, 3, 0, COLOR_TAB_UNDERLINE),
                 new EmptyBorder(15, 5, 12, 5)));
     }
 
@@ -372,12 +401,15 @@ public class Profile extends JPanel {
         label.setBorder(new EmptyBorder(15, 5, 15, 5));
     }
 
-    private JTable buildLeaveTable() {
-        JTable table = new JTable(leaveTableModel);
+
+    private JTable buildLeaveTable(DefaultTableModel model, boolean hasPendingStatus) {
+        JTable table = new JTable(model);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         table.setRowHeight(36);
         table.setGridColor(Color.decode("#F1F5F9"));
-        table.setSelectionBackground(Color.decode("#F0F9FF"));
+
+        table.setSelectionBackground(COLOR_ROW_SELECT);
+        table.setSelectionForeground(Color.WHITE);
         table.setShowVerticalLines(false);
 
         JTableHeader header = table.getTableHeader();
@@ -386,11 +418,32 @@ public class Profile extends JPanel {
         header.setForeground(COLOR_TEXT_MUTED);
         header.setReorderingAllowed(false);
 
-        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
-        center.setHorizontalAlignment(SwingConstants.CENTER);
-        for (int i = 0; i < leaveTableModel.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setCellRenderer(center);
-        }
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+                super.getTableCellRendererComponent(t, v, sel, foc, r, c);
+                setHorizontalAlignment(SwingConstants.CENTER);
+                setBorder(new EmptyBorder(0, 8, 0, 8));
+
+                if (sel) {
+
+                    setForeground(Color.WHITE);
+                } else if (hasPendingStatus && c == model.getColumnCount() - 1 && v != null) {
+
+                    String val = v.toString();
+                    if      (val.equalsIgnoreCase("Pending"))     setForeground(COLOR_ACCENT);
+                    else if (val.equalsIgnoreCase("Approved"))    setForeground(COLOR_SUCCESS);
+                    else if (val.equalsIgnoreCase("Disapproved")) setForeground(COLOR_DANGER);
+                    else                                           setForeground(COLOR_TEXT_MAIN);
+                    setFont(new Font("Segoe UI", Font.BOLD, 13));
+                } else {
+                    setForeground(COLOR_TEXT_MAIN);
+                    setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                }
+                return this;
+            }
+        });
 
         return table;
     }

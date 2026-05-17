@@ -205,4 +205,24 @@ public class LeaveQuery {
         }
         return null;
     }
+
+    public static List<LeaveRequestEntity> getPendingLeavesByEmployee(int empId) {
+        List<LeaveRequestEntity> list = new ArrayList<>();
+        String sql = "SELECT lr.request_id, lr.emp_id, e.full_name, "
+                + "lr.leave_type, lr.start_date, lr.end_date, lr.status "
+                + "FROM leave_requests lr "
+                + "INNER JOIN employees e ON lr.emp_id = e.emp_id "
+                + "WHERE lr.emp_id = ? AND lr.status = 'Pending' "
+                + "ORDER BY lr.start_date ASC";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setInt(1, empId);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                list.add(mapEntity(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
