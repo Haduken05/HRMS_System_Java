@@ -1,9 +1,8 @@
 package logic;
 
-
 public class EmployeeValidation {
 
-    // Add Employee
+    // Add Employee Validation Layer
     public static String validateAdd(String fullName, String contactNo,
                                      String position, String department,
                                      String role) {
@@ -22,22 +21,19 @@ public class EmployeeValidation {
         if (!contactNo.trim().matches("^[0-9+\\-\\s]{7,20}$"))
             return "Contact Number must be 7–20 digits and may include +, -, or spaces.";
 
-        if (position == null || position.isBlank())
-            return "Position is required.";
-
-        if (position.trim().length() > 50)
-            return "Position must not exceed 50 characters.";
-
         if (department == null || department.isBlank())
-            return "Department is required.";
+            return "Department selection is required.";
 
         if (role == null || role.isBlank())
-            return "Role is required.";
+            return "Role assignment is required.";
 
-        return null; // all good
+        if (position == null || position.isBlank())
+            return "Please select an available position matching this department context.";
+
+        return null; // All validation checks passed successfully
     }
 
-    //  Offboard Employee
+    // Offboard Employee Validation Layer
     public static String validateOffboard(String empIdText, String reason) {
         if (empIdText == null || empIdText.isBlank())
             return "Employee ID is required.";
@@ -56,7 +52,7 @@ public class EmployeeValidation {
         if (reason.trim().length() < 10)
             return "Please provide a more detailed reason (at least 10 characters).";
 
-        return null; // all good
+        return null; // All checks passed
     }
 
     public static int parseId(String empIdText) {

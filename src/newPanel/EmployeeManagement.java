@@ -20,7 +20,6 @@ import java.util.List;
 
 public class EmployeeManagement extends JPanel {
 
-    // ── Palette ───────────────────────────────────────────────────────
     private final Color COLOR_BG = Color.decode("#F8FAFC");
     private final Color COLOR_CARD = Color.WHITE;
     private final Color COLOR_TEXT_MAIN = Color.decode("#0F172A");
@@ -29,12 +28,10 @@ public class EmployeeManagement extends JPanel {
     private final Color COLOR_BTN_DARK = Color.decode("#1E293B");
     private final Color COLOR_DANGER = Color.decode("#EF4444");
 
-    // ── Tabs ──────────────────────────────────────────────────────────
     private JLabel tabDirectory, tabAddEmployee, tabOffboard;
     private JPanel cardsPanel;
     private CardLayout cardLayout;
 
-    // ── Directory ─────────────────────────────────────────────────────
     private JTextField txtSearchName, txtSearchID;
     private JComboBox<String> cmbSearchDept;
     private JTable employeeTable;
@@ -42,30 +39,26 @@ public class EmployeeManagement extends JPanel {
     private TableRowSorter<DefaultTableModel> rowSorter;
     private JLabel lblTotalCount;
 
-    // ── Add Employee ──────────────────────────────────────────────────
-    private JTextField txtAddName, txtAddPhone, txtAddPosition;
-    private JComboBox<String> cmbAddDept, cmbAddRole;
+    private JTextField txtAddName, txtAddPhone;
+    private JComboBox<String> cmbAddDept, cmbAddPosition;
+    private JRadioButton radEmployee, radSupervisor;
+    private ButtonGroup roleGroup;
     private JButton btnSubmitAdd;
 
-    // ── Offboard ──────────────────────────────────────────────────────
     private JTextField txtFireID;
     private JTextArea txtFireReason;
     private JButton btnSubmitFire;
-    private JLabel lblFirePreview;   // shows the name once ID is resolved
+    private JLabel lblFirePreview;
 
-    // ── Departments (shared) ──────────────────────────────────────────
     private static final String[] DEPARTMENTS = {
-        "IT Department", "HR Department", "Operations",
-        "Finance", "Administration", "Marketing", "Legal"
+        "IT Department", "HR Department", "Operation Department", "Marketing Department"
     };
 
-    // ─────────────────────────────────────────────────────────────────
     public EmployeeManagement() {
         initComponents();
         loadFromDatabase();
     }
 
-    // ── Build skeleton ────────────────────────────────────────────────
     private void initComponents() {
         setPreferredSize(new Dimension(1000, 700));
         setBackground(COLOR_BG);
@@ -101,8 +94,7 @@ public class EmployeeManagement extends JPanel {
         // Tab strip
         JPanel tabsHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
         tabsHeader.setBackground(COLOR_CARD);
-        tabsHeader.setBorder(BorderFactory.createMatteBorder(
-                0, 0, 1, 0, Color.decode("#E2E8F0")));
+        tabsHeader.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")));
 
         tabDirectory = makeTab("Employee Directory");
         tabAddEmployee = makeTab("Add New Employee");
@@ -117,7 +109,6 @@ public class EmployeeManagement extends JPanel {
         tabsHeader.add(tabOffboard);
         mainCard.add(tabsHeader, BorderLayout.NORTH);
 
-        // Cards
         cardLayout = new CardLayout();
         cardsPanel = new JPanel(cardLayout);
         cardsPanel.setBackground(COLOR_CARD);
@@ -150,13 +141,11 @@ public class EmployeeManagement extends JPanel {
         });
     }
 
-    // ── CARD 1: Directory ─────────────────────────────────────────────
     private void buildDirectoryCard() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(COLOR_CARD);
         panel.setBorder(new EmptyBorder(25, 30, 30, 30));
 
-        // Filter row
         JPanel filterRow = new JPanel(new GridBagLayout());
         filterRow.setBackground(COLOR_CARD);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -191,13 +180,10 @@ public class EmployeeManagement extends JPanel {
 
         panel.add(filterRow, BorderLayout.NORTH);
 
-        // Table — columns include Role so managers can see who is who
         String[] cols = {"ID", "Full Name", "Department", "Position", "Contact No.", "Role"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
+            public boolean isCellEditable(int r, int c) { return false; }
         };
 
         employeeTable = new JTable(tableModel);
@@ -215,8 +201,7 @@ public class EmployeeManagement extends JPanel {
         header.setBackground(Color.decode("#F8FAFC"));
         header.setForeground(COLOR_TEXT_MUTED);
         header.setReorderingAllowed(false);
-        header.setBorder(BorderFactory.createMatteBorder(
-                0, 0, 1, 0, Color.decode("#E2E8F0")));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")));
 
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
         cellRenderer.setBorder(new EmptyBorder(0, 10, 0, 10));
@@ -227,7 +212,6 @@ public class EmployeeManagement extends JPanel {
         scroll.getViewport().setBackground(COLOR_CARD);
         panel.add(scroll, BorderLayout.CENTER);
 
-        // Refresh button at bottom-right
         JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 10));
         bottomBar.setBackground(COLOR_CARD);
         JButton btnRefresh = new JButton("Refresh");
@@ -244,29 +228,17 @@ public class EmployeeManagement extends JPanel {
 
         cardsPanel.add(panel, "DIRECTORY");
 
-        // Live search
         DocumentListener liveSearch = new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                applyFilters();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                applyFilters();
-            }
-            
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                applyFilters();
-            }
+            @Override public void insertUpdate(DocumentEvent e) { applyFilters(); }
+            @Override public void removeUpdate(DocumentEvent e) { applyFilters(); }
+            @Override public void changedUpdate(DocumentEvent e) { applyFilters(); }
         };
         txtSearchName.getDocument().addDocumentListener(liveSearch);
         txtSearchID.getDocument().addDocumentListener(liveSearch);
         cmbSearchDept.addActionListener(e -> applyFilters());
     }
 
-    // ── CARD 2: Add Employee ──────────────────────────────────────────
+    // CARD 2: Add Employee
     private void buildAddCard() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(COLOR_CARD);
@@ -283,19 +255,46 @@ public class EmployeeManagement extends JPanel {
 
         txtAddName = createStyledFormTextField();
         txtAddPhone = createStyledFormTextField();
-        txtAddPosition = createStyledFormTextField();
+        
         cmbAddDept = new JComboBox<>(DEPARTMENTS);
-        
-        cmbAddRole = new JComboBox<>(new String[]{"Employee", "Supervisor"});
-        
         styleComboBox(cmbAddDept);
-        styleComboBox(cmbAddRole);
+
+        cmbAddPosition = new JComboBox<>();
+        styleComboBox(cmbAddPosition);
+
+        radEmployee = new JRadioButton("Employee");
+        radEmployee.setSelected(true);
+        radEmployee.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        radEmployee.setForeground(COLOR_TEXT_MAIN);
+        radEmployee.setBackground(COLOR_CARD);
+        radEmployee.setFocusPainted(false);
+
+        radSupervisor = new JRadioButton("Supervisor");
+        radSupervisor.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        radSupervisor.setForeground(COLOR_TEXT_MAIN);
+        radSupervisor.setBackground(COLOR_CARD);
+        radSupervisor.setFocusPainted(false);
+
+        roleGroup = new ButtonGroup();
+        roleGroup.add(radEmployee);
+        roleGroup.add(radSupervisor);
+
+        JPanel radioContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 8));
+        radioContainer.setBackground(COLOR_CARD);
+        radioContainer.add(radEmployee);
+        radioContainer.add(radSupervisor);
+
+        cmbAddDept.addActionListener(e -> updatePositionsCombo());
+        radEmployee.addActionListener(e -> updatePositionsCombo());
+        radSupervisor.addActionListener(e -> updatePositionsCombo());
+
+        updatePositionsCombo();
 
         formGrid.add(createFieldWrapper("Full Name", txtAddName));
         formGrid.add(createFieldWrapper("Contact No.", txtAddPhone));
-        formGrid.add(createFieldWrapper("Position", txtAddPosition));
         formGrid.add(createFieldWrapper("Department", cmbAddDept));
-        formGrid.add(createFieldWrapper("Role", cmbAddRole));
+        formGrid.add(createFieldWrapper("Role", radioContainer));
+        formGrid.add(createFieldWrapper("Position", cmbAddPosition));
 
         panel.add(formGrid, BorderLayout.CENTER);
 
@@ -311,7 +310,65 @@ public class EmployeeManagement extends JPanel {
         cardsPanel.add(panel, "ADD");
     }
 
-    // ── CARD 3: Offboard ──────────────────────────────────────────────
+    // Dynamic Form Population Rules Matrix
+    private void updatePositionsCombo() {
+        if (cmbAddDept == null || cmbAddPosition == null) return;
+        
+        String selectedDept = (String) cmbAddDept.getSelectedItem();
+        boolean isSupervisor = radSupervisor.isSelected();
+        
+        cmbAddPosition.removeAllItems();
+
+        if (selectedDept == null) return;
+
+        switch (selectedDept) {
+            case "IT Department":
+                if (isSupervisor) {
+                    cmbAddPosition.addItem("IT Team Lead");
+                    cmbAddPosition.addItem("IT Manager");
+                    cmbAddPosition.addItem("IT Director");
+                } else {
+                    cmbAddPosition.addItem("Tech Support");
+                    cmbAddPosition.addItem("Software Developer");
+                    cmbAddPosition.addItem("QA Engineer");
+                }
+                break;
+            case "HR Department":
+                if (isSupervisor) {
+                    cmbAddPosition.addItem("HR Manager");
+                    cmbAddPosition.addItem("HR Director");
+                } else {
+                    cmbAddPosition.addItem("HR Assistant");
+                    cmbAddPosition.addItem("Recruiter");
+                    cmbAddPosition.addItem("Payroll Specialist");
+                }
+                break;
+            case "Operation Department":
+                if (isSupervisor) {
+                    cmbAddPosition.addItem("Operations Manager");
+                    cmbAddPosition.addItem("Operations Director");
+                } else {
+                    cmbAddPosition.addItem("Logistics Coordinator");
+                    cmbAddPosition.addItem("Operations Assistant");
+                    cmbAddPosition.addItem("Inventory Clerk");
+                }
+                break;
+            case "Marketing Department":
+                if (isSupervisor) {
+                    cmbAddPosition.addItem("Marketing Manager");
+                    cmbAddPosition.addItem("Marketing Director");
+                } else {
+                    cmbAddPosition.addItem("Content Writer");
+                    cmbAddPosition.addItem("Graphic Designer");
+                    cmbAddPosition.addItem("Social Media Specialist");
+                }
+                break;
+            default:
+                cmbAddPosition.addItem("Staff Member");
+                break;
+        }
+    }
+
     private void buildOffboardCard() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(COLOR_CARD);
@@ -327,7 +384,6 @@ public class EmployeeManagement extends JPanel {
         center.setBackground(COLOR_CARD);
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
 
-        // ID field + live name preview
         txtFireID = createStyledFormTextField();
         txtFireID.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
@@ -340,22 +396,10 @@ public class EmployeeManagement extends JPanel {
         JPanel idWrapper = createFieldWrapper("Employee ID to Offboard", txtFireID);
         idWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Live lookup: as the manager types an ID, resolve the name immediately
         txtFireID.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                resolveEmployeeName();
-            }
-            
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                resolveEmployeeName();
-            }
-            
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                resolveEmployeeName();
-            }
+            @Override public void insertUpdate(DocumentEvent e) { resolveEmployeeName(); }
+            @Override public void removeUpdate(DocumentEvent e) { resolveEmployeeName(); }
+            @Override public void changedUpdate(DocumentEvent e) { resolveEmployeeName(); }
         });
 
         txtFireReason = new JTextArea(6, 20);
@@ -387,21 +431,12 @@ public class EmployeeManagement extends JPanel {
         cardsPanel.add(panel, "OFFBOARD");
     }
 
-    // ── DB operations ─────────────────────────────────────────────────
-    /**
-     * Loads all employees from DB into the directory table.
-     */
     public void loadFromDatabase() {
         tableModel.setRowCount(0);
         List<Employee> employees = EmployeeQuery.getAllEmployees();
         for (Employee emp : employees) {
             tableModel.addRow(new Object[]{
-                emp.empId,
-                emp.fullName,
-                emp.department,
-                emp.position,
-                emp.contactNo,
-                emp.role
+                emp.empId, emp.fullName, emp.department, emp.position, emp.contactNo, emp.role
             });
         }
         applyFilters();
@@ -410,37 +445,29 @@ public class EmployeeManagement extends JPanel {
     private void processAddEmployee() {
         String name = txtAddName.getText().trim();
         String phone = txtAddPhone.getText().trim();
-        String position = txtAddPosition.getText().trim();
+        String position = (String) cmbAddPosition.getSelectedItem();
         String dept = (String) cmbAddDept.getSelectedItem();
-        String role = (String) cmbAddRole.getSelectedItem();
+        String role = radSupervisor.isSelected() ? "Supervisor" : "Employee";
 
-        // Run through the validation logic class first
         String error = EmployeeValidation.validateAdd(name, phone, position, dept, role);
         if (error != null) {
-            JOptionPane.showMessageDialog(this, error,
-                    "Validation Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, error, "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         int newId = EmployeeQuery.insertEmployee(name, dept, position, phone, role);
         if (newId < 0) {
-            JOptionPane.showMessageDialog(this,
-                    "Failed to add employee. Please try again.",
-                    "Database Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to add employee.", "Database Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        JOptionPane.showMessageDialog(this,
-                name + " has been added successfully.\n"
-                + "Employee ID: " + newId + "\n"
-                + "Default password: 1234",
-                "Employee Added", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, name + " has been added successfully.\nEmployee ID: " + newId + "\nDefault password: 1234", "Employee Added", JOptionPane.INFORMATION_MESSAGE);
 
         txtAddName.setText("");
         txtAddPhone.setText("");
-        txtAddPosition.setText("");
         cmbAddDept.setSelectedIndex(0);
-        cmbAddRole.setSelectedIndex(0);
+        radEmployee.setSelected(true);
+        updatePositionsCombo();
 
         loadFromDatabase();
         switchTab("DIRECTORY", tabDirectory, tabAddEmployee, tabOffboard);
@@ -450,51 +477,32 @@ public class EmployeeManagement extends JPanel {
         String idText = txtFireID.getText().trim();
         String reason = txtFireReason.getText().trim();
 
-        // Validate inputs before touching the DB
         String error = EmployeeValidation.validateOffboard(idText, reason);
         if (error != null) {
-            JOptionPane.showMessageDialog(this, error,
-                    "Validation Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, error, "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         int empId = EmployeeValidation.parseId(idText);
-
-        // Verify the employee actually exists
         Employee target = EmployeeQuery.getById(empId);
         if (target == null) {
-            JOptionPane.showMessageDialog(this,
-                    "No employee found with ID: " + empId,
-                    "Not Found", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No employee found with ID: " + empId, "Not Found", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         int confirm = JOptionPane.showConfirmDialog(this,
-                "<html>You are about to offboard:<br><br>"
-                + "<b>" + target.fullName + "</b> (ID: " + empId + ")<br>"
-                + "Department: " + target.department + "<br>"
-                + "Position: " + target.position + "<br><br>"
-                + "Their record will be <b>archived</b> before removal.<br>"
-                + "This action <b>cannot be undone</b>. Continue?</html>",
-                "Confirm Offboarding", JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
+                "<html>You are about to offboard:<br><br><b>" + target.fullName + "</b> (ID: " + empId + ")<br>Department: " + target.department + "<br>Position: " + target.position + "<br><br>Their record will be <b>archived</b> before removal.<br>This action <b>cannot be undone</b>. Continue?</html>",
+                "Confirm Offboarding", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
-        if (confirm != JOptionPane.YES_OPTION) {
-            return;
-        }
+        if (confirm != JOptionPane.YES_OPTION) return;
 
-        // Archive + delete in one transaction
         boolean ok = EmployeeQuery.archiveAndDelete(empId, reason);
         if (!ok) {
-            JOptionPane.showMessageDialog(this,
-                    "Failed to offboard employee. Please try again.",
-                    "Database Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to offboard employee.", "Database Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        JOptionPane.showMessageDialog(this,
-                target.fullName + " has been offboarded and their record archived.",
-                "Offboarding Complete", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, target.fullName + " has been offboarded.", "Offboarding Complete", JOptionPane.INFORMATION_MESSAGE);
 
         txtFireID.setText("");
         txtFireReason.setText("");
@@ -504,9 +512,6 @@ public class EmployeeManagement extends JPanel {
         switchTab("DIRECTORY", tabDirectory, tabOffboard, tabAddEmployee);
     }
 
-    /**
-     * Resolves the employee name live as the manager types the ID.
-     */
     private void resolveEmployeeName() {
         String text = txtFireID.getText().trim();
         if (text.isEmpty()) {
@@ -517,8 +522,7 @@ public class EmployeeManagement extends JPanel {
             int id = Integer.parseInt(text);
             Employee emp = EmployeeQuery.getById(id);
             if (emp != null) {
-                lblFirePreview.setText("✓ " + emp.fullName
-                        + " — " + emp.department + " / " + emp.position);
+                lblFirePreview.setText("✓ " + emp.fullName + " — " + emp.department + " / " + emp.position);
                 lblFirePreview.setForeground(COLOR_ACCENT);
             } else {
                 lblFirePreview.setText("X No employee found with this ID");
@@ -530,7 +534,6 @@ public class EmployeeManagement extends JPanel {
         }
     }
 
-    // ── Filter logic ──────────────────────────────────────────────────
     private void applyFilters() {
         String nameQ = txtSearchName.getText().trim().toLowerCase();
         String idQ = txtSearchID.getText().trim().toLowerCase();
@@ -542,15 +545,12 @@ public class EmployeeManagement extends JPanel {
                 String rowId = entry.getStringValue(0).toLowerCase();
                 String rowName = entry.getStringValue(1).toLowerCase();
                 String rowDept = entry.getStringValue(2);
-                return rowName.contains(nameQ)
-                        && rowId.contains(idQ)
-                        && (dept.equals("All Departments") || rowDept.equalsIgnoreCase(dept));
+                return rowName.contains(nameQ) && rowId.contains(idQ) && (dept.equals("All Departments") || rowDept.equalsIgnoreCase(dept));
             }
         });
         lblTotalCount.setText("Total: " + rowSorter.getViewRowCount());
     }
 
-    // ── Tab helpers ───────────────────────────────────────────────────
     private void switchTab(String card, JLabel active, JLabel a, JLabel b) {
         setTabActive(active);
         setTabInactive(a);
@@ -577,7 +577,6 @@ public class EmployeeManagement extends JPanel {
         label.setBorder(new EmptyBorder(15, 5, 15, 5));
     }
 
-    // ── UI factories ──────────────────────────────────────────────────
     private JPanel createFieldWrapper(String labelText, JComponent input) {
         JPanel wrap = new JPanel();
         wrap.setBackground(COLOR_CARD);
