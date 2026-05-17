@@ -52,6 +52,8 @@ public class LeaveRequestApproval extends JPanel {
     private JTextField txtSearchName, txtSearchEmpID;
     private JLabel lblMetricsTracker;
 
+    private Runnable onStatusChanged;
+
     public LeaveRequestApproval() {
         initComponents();
         loadFromDatabase();
@@ -175,14 +177,17 @@ public class LeaveRequestApproval extends JPanel {
 
         // Live search
         DocumentListener liveSearch = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 runGlobalFilters();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 runGlobalFilters();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 runGlobalFilters();
             }
@@ -192,16 +197,19 @@ public class LeaveRequestApproval extends JPanel {
 
         // Tab clicks
         tabPending.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 switchActiveView("PENDING", tabPending, tabApproved, tabDenied);
             }
         });
         tabApproved.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 switchActiveView("APPROVED", tabApproved, tabPending, tabDenied);
             }
         });
         tabDenied.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 switchActiveView("DENIED", tabDenied, tabPending, tabApproved);
             }
@@ -259,6 +267,21 @@ public class LeaveRequestApproval extends JPanel {
             return;
         }
 
+        // Calculate days of the selected request
+        // We need the raw dates — add a helper query for this
+        if (approve) {
+            // Only deduct credits upon APPROVAL
+            int[] days = LeaveQuery.getLeaveDays(selected.getRequestId());
+            if (days != null) {
+                LeaveQuery.deductCredits(
+                        Integer.parseInt(selected.getEmpId()),
+                        selected.getLeaveType(),
+                        days[0]
+                );
+            }
+        }
+        // On disapprove: do nothing to credits — they were never touched
+
         allPending.remove(selected);
         LeaveRequestRow moved = selected.withStatus(newStatus);
 
@@ -279,6 +302,10 @@ public class LeaveRequestApproval extends JPanel {
         refreshTableSlice("PENDING");
         refreshTableSlice("APPROVED");
         refreshTableSlice("DENIED");
+
+        if (onStatusChanged != null) {
+            onStatusChanged.run();
+        }
     }
 
     // Pagination
@@ -592,5 +619,9 @@ public class LeaveRequestApproval extends JPanel {
         b.setBorder(new LineBorder(Color.decode("#CBD5E1"), 1, true));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setPreferredSize(new Dimension(42, 32));
+    }
+
+    public void setOnStatusChanged(Runnable callback) {
+        this.onStatusChanged = callback;
     }
 }

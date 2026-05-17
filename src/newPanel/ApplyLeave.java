@@ -517,11 +517,7 @@ public class ApplyLeave extends JPanel {
             return;
         }
 
-        // Deduct credits
-        if (leaveCode.equals("VL") || leaveCode.equals("SL")) {
-            long days = LeaveLogic.daysBetween(fromDate, toDate) + 1;
-            LeaveQuery.deductCredits(currentEmpId, leaveCode, (int) days);
-        }
+       
 
         JOptionPane.showMessageDialog(this,
                 "Leave request submitted successfully!\nStatus: Pending approval.",
@@ -547,14 +543,32 @@ public class ApplyLeave extends JPanel {
     }
 
     //  Credits
-    private void refreshCreditBadges() {
+    public void refreshCreditBadges() {
         if (currentEmpId < 0) {
             return;
         }
+
         int vl = LeaveQuery.getVLCredits(currentEmpId);
         int sl = LeaveQuery.getSLCredits(currentEmpId);
-        lblVLCredits.setText("  VL: " + (vl >= 0 ? vl : "—") + " day(s) remaining  ");
-        lblSLCredits.setText("  SL: " + (sl >= 0 ? sl : "—") + " day(s) remaining  ");
+
+        int vlPending = LeaveQuery.getPendingDays(currentEmpId, "VL");
+        int slPending = LeaveQuery.getPendingDays(currentEmpId, "SL");
+
+        // VL badge
+        String vlText = "  VL: " + (vl >= 0 ? vl : "—") + " day(s)";
+        if (vlPending > 0) {
+            vlText += " [− " + vlPending + " Pending]";
+        }
+        vlText += " remaining  ";
+        lblVLCredits.setText(vlText);
+
+        // SL badge
+        String slText = "  SL: " + (sl >= 0 ? sl : "—") + " day(s)";
+        if (slPending > 0) {
+            slText += " [− " + slPending + " Pending]";
+        }
+        slText += " remaining  ";
+        lblSLCredits.setText(slText);
     }
 
     //  Public API

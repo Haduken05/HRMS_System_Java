@@ -120,6 +120,8 @@ public class MainFrame extends JFrame {
 
         // After a successful leave submission, keep Profile credits in sync
         applyLeavePanel.setOnSubmitSuccess(() -> profilePanel.refreshCredits());
+        leaveRequest.setOnStatusChanged(() -> applyLeavePanel.refreshCreditBadges());
+
 
         contentPanel.add(applyLeavePanel, CARD_APPLY_LEAVE);
         contentPanel.add(profilePanel, CARD_PROFILE);
