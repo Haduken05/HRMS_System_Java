@@ -66,7 +66,7 @@ public class ApplyLeave extends JPanel {
         headerPanel.setBackground(BG);
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
-        JLabel titleLabel = new JLabel("Leave Request");
+        JLabel titleLabel = new JLabel("Apply Leave");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
         titleLabel.setForeground(TEXT_MAIN);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
