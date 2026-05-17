@@ -80,11 +80,20 @@ public class MainFrame extends JFrame {
         try {
             java.net.URL imgUrl = getClass().getResource("/Image/" + imgPath);
             if (imgUrl != null) {
-                lblLogo.setIcon(new ImageIcon(imgUrl));
+                
+                ImageIcon originalIcon = new ImageIcon(imgUrl);
+                
+                int targetWidth = 250;
+                int targetHeight = 140;
+                
+                Image scaledImage = originalIcon.getImage().getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+                
+                lblLogo.setIcon(new ImageIcon(scaledImage));
             }
         } catch (Exception ignored) {
 
         }
+        
 
         lblLogo.setBackground(Color.WHITE);
         lblLogo.setOpaque(true);

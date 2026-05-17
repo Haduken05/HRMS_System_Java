@@ -48,7 +48,6 @@ public class LoginFrame extends javax.swing.JFrame {
         
         jLabel4 = new JLabel();
         try {
-            // 1. Load the original image icon
             java.net.URL imgURL = getClass().getResource("/Image/" + imgPath);
             if (imgURL != null) {
                 ImageIcon originalIcon = new ImageIcon(imgURL);
