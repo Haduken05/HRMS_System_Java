@@ -1,8 +1,13 @@
 package newPanel;
 
+// ── ADD these imports at the top of Report.java alongside the existing ones ──
+import com.toedter.calendar.JDateChooser;
+
 import theme.SystemTheme;
 import dataObject.LeaveRequestEntity;
+import dataObject.AttendanceRecord;
 import dbquery.LeaveQuery;
+import dbquery.AttendanceQuery;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,6 +15,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -17,43 +23,63 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.Locale;
 
 public class Report extends JPanel {
 
-    private static final Color BG           = SystemTheme.CARD_BG;
-    private static final Color CARD         = Color.WHITE;
-    private static final Color TEXT_MAIN    = SystemTheme.TEXT_MAIN;
-    private static final Color TEXT_MUTED   = SystemTheme.TEXT_MUTED;
+    private static final Color BG = SystemTheme.CARD_BG;
+    private static final Color CARD = Color.WHITE;
+    private static final Color TEXT_MAIN = SystemTheme.TEXT_MAIN;
+    private static final Color TEXT_MUTED = SystemTheme.TEXT_MUTED;
     private static final Color TEXT_REFRESH = SystemTheme.TEXT_COLOR;
-    private static final Color BORDER_CLR   = SystemTheme.BORDER_COLOR;
-    private static final Color HEADER_BG    = SystemTheme.PRIMARY_COLOR;
-    private static final Color BTN_REFRESH  = SystemTheme.BTN_REFRESH;
+    private static final Color BORDER_CLR = SystemTheme.BORDER_COLOR;
+    private static final Color HEADER_BG = SystemTheme.PRIMARY_COLOR;
+    private static final Color BTN_REFRESH = SystemTheme.BTN_REFRESH;
 
-    private static final Color APPROVED_COLOR  = SystemTheme.APPROVED_COLOR;
-    private static final Color APPROVED_BG     = SystemTheme.APPROVED_BG;
-    private static final Color PENDING_COLOR   = SystemTheme.PENDING_COLOR;
-    private static final Color PENDING_BG      = SystemTheme.PENDING_BG;
-    private static final Color TODAY_RING      = SystemTheme.CALENDAR_TODAY_RING;
-    private static final Color CAL_HEADER_BG   = SystemTheme.BTN_DARK;
-    private static final Color CAL_HEADER_FG   = SystemTheme.TEXT_COLOR;
-    private static final Color WEEKEND_BG      = SystemTheme.CALENDAR_WEEKEND_BG;
-    private static final Color CELL_HOVER_BG   = SystemTheme.CALENDAR_CELL_HOVER;
+    private static final Color APPROVED_COLOR = SystemTheme.APPROVED_COLOR;
+    private static final Color APPROVED_BG = SystemTheme.APPROVED_BG;
+    private static final Color PENDING_COLOR = SystemTheme.PENDING_COLOR;
+    private static final Color PENDING_BG = SystemTheme.PENDING_BG;
+    private static final Color TODAY_RING = SystemTheme.CALENDAR_TODAY_RING;
+    private static final Color CAL_HEADER_BG = SystemTheme.BTN_DARK;
+    private static final Color CAL_HEADER_FG = SystemTheme.TEXT_COLOR;
+    private static final Color WEEKEND_BG = SystemTheme.CALENDAR_WEEKEND_BG;
+    private static final Color CELL_HOVER_BG = SystemTheme.CALENDAR_CELL_HOVER;
 
     private YearMonth currentMonth = YearMonth.now();
 
     private final Map<Integer, List<LeaveRequestEntity>> approvedByDay = new HashMap<>();
-    private final Map<Integer, List<LeaveRequestEntity>> pendingByDay  = new HashMap<>();
+    private final Map<Integer, List<LeaveRequestEntity>> pendingByDay = new HashMap<>();
 
     private JLabel lblMonthYear;
     private CalendarGrid calendarGrid;
     private JLabel tabAttendance, tabCalendar;
     private JPanel cardsPanel;
     private CardLayout cardLayout;
-    private JPanel tooltipPopup;          
+    private JPanel tooltipPopup;
     private JLabel activeTabRef;
+
+    private DefaultTableModel attModel;
+    private TableRowSorter<DefaultTableModel> attSorter;
+    private JDateChooser dcAttFrom, dcAttTo;
+    private JComboBox<String> cmbAttDept;
+    private JLabel lblAttCount;
+
+    private static final String[] ATT_DEPARTMENTS = {
+        "All Departments",
+        "IT Department", "HR Department",
+        "Operation Department", "Marketing Department"
+    };
+
+    private static final SimpleDateFormat DB_FMT
+            = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat TIME_FMT
+            = new SimpleDateFormat("h:mm a");
+    private static final SimpleDateFormat DATE_FMT
+            = new SimpleDateFormat("MMM d, yyyy");
 
     public Report() {
         initComponents();
@@ -97,7 +123,7 @@ public class Report extends JPanel {
                 Color.decode("#E2E8F0")));
 
         tabAttendance = makeTabLabel("Attendance Tracker");
-        tabCalendar   = makeTabLabel("Leave Calendar");
+        tabCalendar = makeTabLabel("Leave Calendar");
 
         setTabActive(tabCalendar);
         setTabInactive(tabAttendance);
@@ -112,7 +138,7 @@ public class Report extends JPanel {
         cardsPanel.setBackground(CARD);
 
         cardsPanel.add(buildAttendanceCard(), "ATTENDANCE");
-        cardsPanel.add(buildCalendarCard(),   "CALENDAR");
+        cardsPanel.add(buildCalendarCard(), "CALENDAR");
         cardLayout.show(cardsPanel, "CALENDAR");
         activeTabRef = tabCalendar;
 
@@ -141,56 +167,264 @@ public class Report extends JPanel {
 
     //  Attendance tab
     private JPanel buildAttendanceCard() {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout(0, 0));
         panel.setBackground(CARD);
-        panel.setBorder(new EmptyBorder(40, 40, 40, 40));
+        panel.setBorder(new EmptyBorder(25, 30, 25, 30));
 
-        // Placeholder table with stub columns
-        String[] cols = {"Emp ID", "Name", "Department", "Date", "Time In",
-                         "Time Out", "Hours", "Status"};
-        DefaultTableModel model = new DefaultTableModel(cols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+        dcAttFrom = new JDateChooser();
+        dcAttTo = new JDateChooser();
+
+        // FILTER BAR
+        JPanel filterBar = new JPanel(new GridBagLayout());
+        filterBar.setBackground(CARD);
+        filterBar.setBorder(new EmptyBorder(0, 0, 18, 0));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 0, 0, 12);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.gridy = 0;
+
+        styleAttDateChooser(dcAttFrom);
+        styleAttDateChooser(dcAttTo);
+
+        java.util.Date today = new java.util.Date();
+        dcAttFrom.setDate(today);
+        dcAttTo.setDate(today);
+        dcAttTo.setMinSelectableDate(today);
+
+        dcAttFrom.addPropertyChangeListener("date", evt -> {
+            java.util.Date fromDate = dcAttFrom.getDate();
+            if (fromDate != null) {
+
+                if (dcAttTo.getDate() == null || dcAttTo.getDate().before(fromDate)) {
+                    dcAttTo.setDate(fromDate);
+                }
+                dcAttTo.setMinSelectableDate(fromDate);
+            } else {
+                dcAttTo.setMinSelectableDate(null);
+            }
+            loadAttendanceTables();
+        });
+
+        dcAttTo.addPropertyChangeListener("date", evt -> {
+            java.util.Date toDate = dcAttTo.getDate();
+            java.util.Date fromDate = dcAttFrom.getDate();
+
+            if (toDate != null && fromDate != null && toDate.before(fromDate)) {
+                dcAttTo.setDate(fromDate);
+                return;
+            }
+            loadAttendanceTables();
+        });
+
+        gbc.gridx = 0;
+        filterBar.add(attFieldWrapper("From Date", dcAttFrom), gbc);
+        gbc.gridx = 1;
+        filterBar.add(attFieldWrapper("To Date", dcAttTo), gbc);
+
+        cmbAttDept = new JComboBox<>(ATT_DEPARTMENTS);
+        cmbAttDept.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        cmbAttDept.setBackground(CARD);
+        cmbAttDept.setPreferredSize(new Dimension(0, 36));
+        gbc.gridx = 2;
+        filterBar.add(attFieldWrapper("Department", cmbAttDept), gbc);
+
+        lblAttCount = new JLabel("Total: 0");
+        lblAttCount.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblAttCount.setForeground(SystemTheme.TEXT_INDICATOR);
+        gbc.gridx = 3;
+        gbc.weightx = 0.4;
+        gbc.anchor = GridBagConstraints.SOUTH;
+        filterBar.add(lblAttCount, gbc);
+
+        panel.add(filterBar, BorderLayout.NORTH);
+
+        // TABLE
+        String[] cols = {"ID", "Name", "Department", "Date",
+            "Time In", "Time Out", "Status", "OT hrs", "Remarks"};
+        attModel = new DefaultTableModel(cols, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
 
-        JTable table = new JTable(model);
-        table.setFont(SystemTheme.NORMAL_TEXT);
-        table.setRowHeight(38);
+        JTable table = new JTable(attModel);
+        attSorter = new TableRowSorter<>(attModel);
+        table.setRowSorter(attSorter);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        table.setRowHeight(30);
         table.setGridColor(Color.decode("#F1F5F9"));
         table.setSelectionBackground(Color.decode("#1E3A5F"));
         table.setSelectionForeground(Color.WHITE);
         table.setShowVerticalLines(false);
 
         JTableHeader th = table.getTableHeader();
-        th.setFont(SystemTheme.BOLD_TEXT);
+        th.setFont(new Font("Segoe UI", Font.BOLD, 12));
         th.setBackground(HEADER_BG);
         th.setForeground(TEXT_MUTED);
         th.setReorderingAllowed(false);
+        th.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.decode("#E2E8F0")));
 
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+        center.setBorder(new EmptyBorder(0, 8, 0, 8));
         center.setHorizontalAlignment(SwingConstants.CENTER);
-        for (int i = 0; i < cols.length; i++)
+        center.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        for (int i = 0; i < cols.length; i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(center);
+        }
+
+        // Status column renderer
+        table.getColumnModel().getColumn(6).setCellRenderer(
+                new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object value,
+                    boolean sel, boolean foc, int row, int col) {
+                super.getTableCellRendererComponent(t, value, sel, foc, row, col);
+                setHorizontalAlignment(SwingConstants.CENTER);
+                setBorder(new EmptyBorder(0, 8, 0, 8));
+                setFont(new Font("Segoe UI", Font.BOLD, 11));
+                if (!sel) {
+                    String s = value == null ? "" : value.toString();
+                    switch (s) {
+                        case "Present":
+                            setForeground(Color.decode("#065F46"));
+                            break;
+                        case "Late":
+                            setForeground(Color.decode("#92400E"));
+                            break;
+                        case "Half-Day":
+                            setForeground(Color.decode("#9F1239"));
+                            break;
+                        case "After Hours":
+                            setForeground(Color.decode("#4C1D95"));
+                            break;
+                        default:
+                            setForeground(TEXT_MUTED);
+                            break;
+                    }
+                } else {
+                    setForeground(Color.WHITE);
+                }
+                return this;
+            }
+        });
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(new LineBorder(Color.decode("#E2E8F0"), 1, true));
         scroll.getViewport().setBackground(CARD);
+        panel.add(scroll, BorderLayout.CENTER);
 
-        // Coming soon banner above the table
-        JPanel banner = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        banner.setBackground(Color.decode("#FEF9C3"));
-        banner.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(Color.decode("#FDE68A"), 1, true),
-                new EmptyBorder(10, 16, 10, 16)));
+        // BOTTOM BAR
+        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        bottomBar.setBackground(CARD);
 
-        JLabel bannerText = new JLabel("Attendance tracking is coming soon — "
-                + "this table will populate once implemented.");
-        bannerText.setFont(SystemTheme.BOLD_TEXT);
-        bannerText.setForeground(Color.decode("#92400E"));
-        banner.add(bannerText);
+        JButton btnLoad = new JButton("Load / Refresh");
+        btnLoad.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnLoad.setBackground(BTN_REFRESH);
+        btnLoad.setForeground(TEXT_REFRESH);
+        btnLoad.setBorder(new LineBorder(BORDER_CLR, 1, true));
+        btnLoad.setFocusPainted(false);
+        btnLoad.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLoad.setPreferredSize(new Dimension(130, 34));
+        btnLoad.addActionListener(e -> loadAttendanceTables());
 
-        panel.add(banner, BorderLayout.NORTH);
-        panel.add(scroll,  BorderLayout.CENTER);
+        JButton btnClear = new JButton("Clear Filters");
+        btnClear.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnClear.setBackground(CARD);
+        btnClear.setForeground(TEXT_MUTED);
+        btnClear.setBorder(new LineBorder(BORDER_CLR, 1, true));
+        btnClear.setFocusPainted(false);
+        btnClear.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnClear.setPreferredSize(new Dimension(110, 34));
+        btnClear.addActionListener(e -> {
+            dcAttFrom.setDate(new java.util.Date());
+            dcAttTo.setDate(new java.util.Date());
+            cmbAttDept.setSelectedIndex(0);
+            loadAttendanceTables();
+        });
+
+        bottomBar.add(btnClear);
+        bottomBar.add(btnLoad);
+        panel.add(bottomBar, BorderLayout.SOUTH);
+
+        cmbAttDept.addActionListener(e -> loadAttendanceTables());
+
+        // Initial load
+        loadAttendanceTables();
+
         return panel;
+    }
+
+    private void loadAttendanceTables() {
+        String from = null;
+        String to = null;
+
+        if (dcAttFrom.getDate() != null) {
+            from = DB_FMT.format(dcAttFrom.getDate());
+        }
+        if (dcAttTo.getDate() != null) {
+            to = DB_FMT.format(dcAttTo.getDate());
+        }
+
+        String dept = (String) cmbAttDept.getSelectedItem();
+        if ("All Departments".equals(dept)) {
+            dept = null;
+        }
+
+        List<AttendanceRecord> records = AttendanceQuery.getAttendanceReport(from, to, dept);
+
+        attModel.setRowCount(0);
+        for (AttendanceRecord r : records) {
+            String timeInStr = r.timeIn != null ? TIME_FMT.format(r.timeIn) : "—";
+            String timeOutStr = r.timeOut != null ? TIME_FMT.format(r.timeOut) : "—";
+            String dateStr = DATE_FMT.format(java.sql.Date.valueOf(r.dateLogged));
+            String otStr = r.otHours > 0 ? r.otHours + "h" : "—";
+            String remarksStr = r.remarks != null ? r.remarks : "—";
+
+            attModel.addRow(new Object[]{
+                r.empId, r.fullName, r.department, dateStr,
+                timeInStr, timeOutStr, r.status, otStr, remarksStr
+            });
+        }
+        lblAttCount.setText("Total: " + attModel.getRowCount());
+    }
+
+    private void loadAttendanceFromFields(JTextField txtFrom, JTextField txtTo) {
+    }
+
+    private void loadAttendanceTable() {
+    }
+
+    private JPanel attFieldWrapper(String labelText, JComponent input) {
+        JPanel wrap = new JPanel();
+        wrap.setBackground(CARD);
+        wrap.setLayout(new BoxLayout(wrap, BoxLayout.Y_AXIS));
+        JLabel lbl = new JLabel(labelText);
+        lbl.setFont(SystemTheme.BOLD_TEXT);
+        lbl.setForeground(TEXT_MAIN);
+        lbl.setBorder(new EmptyBorder(0, 0, 5, 0));
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        input.setAlignmentX(Component.LEFT_ALIGNMENT);
+        wrap.add(lbl);
+        wrap.add(input);
+        return wrap;
+    }
+
+    private void styleAttDateChooser(JDateChooser dc) {
+        dc.setDateFormatString("MMM d, yyyy");
+        dc.setFont(SystemTheme.NORMAL_TEXT);
+        dc.setBackground(CARD);
+        dc.setPreferredSize(new Dimension(160, 38));
+        dc.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+
+        JTextField tf = (JTextField) dc.getDateEditor().getUiComponent();
+        tf.setBackground(CARD);
+        tf.setForeground(TEXT_MAIN);
+        tf.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        tf.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDER_CLR, 1, true),
+                new EmptyBorder(0, 10, 0, 10)));
     }
 
     //  Calendar tab
@@ -265,7 +499,7 @@ public class Report extends JPanel {
         leg.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0,
                 Color.decode("#E2E8F0")));
         leg.add(legendChip(APPROVED_BG, APPROVED_COLOR, "Approved leave"));
-        leg.add(legendChip(PENDING_BG,  PENDING_COLOR,  "Pending leave"));
+        leg.add(legendChip(PENDING_BG, PENDING_COLOR, "Pending leave"));
         JLabel todayChip = new JLabel("  Today  ");
         todayChip.setFont(SystemTheme.SMALL_TEXT_BOLD);
         todayChip.setBackground(CARD);
@@ -307,33 +541,37 @@ public class Report extends JPanel {
         approvedByDay.clear();
         pendingByDay.clear();
 
-        List<LeaveRequestEntity> leaves =
-                LeaveQuery.getLeavesForMonth(currentMonth.getYear(),
-                                             currentMonth.getMonthValue());
+        List<LeaveRequestEntity> leaves
+                = LeaveQuery.getLeavesForMonth(currentMonth.getYear(),
+                        currentMonth.getMonthValue());
 
         for (LeaveRequestEntity e : leaves) {
-            if (e.getStartDate() == null || e.getEndDate() == null) continue;
+            if (e.getStartDate() == null || e.getEndDate() == null) {
+                continue;
+            }
 
             LocalDate start = e.getStartDate().toLocalDate();
-            LocalDate end   = e.getEndDate().toLocalDate();
+            LocalDate end = e.getEndDate().toLocalDate();
 
             // Walk every day of the leave range that falls in this month
             LocalDate cursor = start;
             while (!cursor.isAfter(end)) {
-                if (cursor.getYear()  == currentMonth.getYear()
-                 && cursor.getMonthValue() == currentMonth.getMonthValue()) {
+                if (cursor.getYear() == currentMonth.getYear()
+                        && cursor.getMonthValue() == currentMonth.getMonthValue()) {
 
                     int day = cursor.getDayOfMonth();
-                    Map<Integer, List<LeaveRequestEntity>> map =
-                            e.getStatus().equalsIgnoreCase("Approved")
-                                    ? approvedByDay : pendingByDay;
+                    Map<Integer, List<LeaveRequestEntity>> map
+                            = e.getStatus().equalsIgnoreCase("Approved")
+                            ? approvedByDay : pendingByDay;
                     map.computeIfAbsent(day, k -> new ArrayList<>()).add(e);
                 }
                 cursor = cursor.plusDays(1);
             }
         }
 
-        if (calendarGrid != null) calendarGrid.repaint();
+        if (calendarGrid != null) {
+            calendarGrid.repaint();
+        }
     }
 
     //  Tooltip popup
@@ -341,8 +579,10 @@ public class Report extends JPanel {
         hideTooltip();
 
         List<LeaveRequestEntity> approved = approvedByDay.getOrDefault(day, List.of());
-        List<LeaveRequestEntity> pending  = pendingByDay.getOrDefault(day, List.of());
-        if (approved.isEmpty() && pending.isEmpty()) return;
+        List<LeaveRequestEntity> pending = pendingByDay.getOrDefault(day, List.of());
+        if (approved.isEmpty() && pending.isEmpty()) {
+            return;
+        }
 
         tooltipPopup = new JPanel();
         tooltipPopup.setLayout(new BoxLayout(tooltipPopup, BoxLayout.Y_AXIS));
@@ -362,7 +602,7 @@ public class Report extends JPanel {
         tooltipPopup.add(heading);
 
         addTooltipRows(tooltipPopup, approved, APPROVED_COLOR, APPROVED_BG, "Approved");
-        addTooltipRows(tooltipPopup, pending,  PENDING_COLOR,  PENDING_BG,  "Pending");
+        addTooltipRows(tooltipPopup, pending, PENDING_COLOR, PENDING_BG, "Pending");
 
         // Show as a lightweight popup
         JLayeredPane layered = SwingUtilities.getRootPane(invoker).getLayeredPane();
@@ -375,10 +615,18 @@ public class Report extends JPanel {
 
         // Keep inside pane
         Dimension ps = tooltipPopup.getPreferredSize();
-        if (px + ps.width  > layered.getWidth())  px = layered.getWidth()  - ps.width  - 4;
-        if (py + ps.height > layered.getHeight()) py = layered.getHeight() - ps.height - 4;
-        if (px < 0) px = 0;
-        if (py < 0) py = 0;
+        if (px + ps.width > layered.getWidth()) {
+            px = layered.getWidth() - ps.width - 4;
+        }
+        if (py + ps.height > layered.getHeight()) {
+            py = layered.getHeight() - ps.height - 4;
+        }
+        if (px < 0) {
+            px = 0;
+        }
+        if (py < 0) {
+            py = 0;
+        }
 
         tooltipPopup.setBounds(px, py, ps.width, ps.height);
         layered.add(tooltipPopup, JLayeredPane.POPUP_LAYER);
@@ -424,8 +672,8 @@ public class Report extends JPanel {
     //  Helpers
     private void updateMonthLabel() {
         lblMonthYear.setText(
-            currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH)
-            + "  " + currentMonth.getYear());
+                currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+                + "  " + currentMonth.getYear());
     }
 
     private JLabel makeTabLabel(String text) {
@@ -450,10 +698,10 @@ public class Report extends JPanel {
     //  Custom Calendar Grid
     private class CalendarGrid extends JPanel {
 
-        private static final int COLS       = 7;
-        private static final int ROWS       = 7; // Up to 6 week rows
-        private static final int HEADER_H   = 38;
-        private static final int MAX_DOTS   = 3; // max employee dots per cell
+        private static final int COLS = 7;
+        private static final int ROWS = 7; // Up to 6 week rows
+        private static final int HEADER_H = 38;
+        private static final int MAX_DOTS = 3; // max employee dots per cell
 
         private int hoveredDay = -1;
 
@@ -499,8 +747,8 @@ public class Report extends JPanel {
             int w = getWidth();
             int h = getHeight();
             int cellW = w / COLS;
-            int bodyH  = h - HEADER_H;
-            int cellH  = bodyH / 6;
+            int bodyH = h - HEADER_H;
+            int cellH = bodyH / 6;
 
             // Day-of-week header row
             g2.setColor(CAL_HEADER_BG);
@@ -517,23 +765,25 @@ public class Report extends JPanel {
             }
 
             // Build day grid
-            LocalDate today    = LocalDate.now();
+            LocalDate today = LocalDate.now();
             LocalDate firstDay = currentMonth.atDay(1);
-            int startCol       = firstDay.getDayOfWeek().getValue() % 7; // Sun=0
-            int daysInMonth    = currentMonth.lengthOfMonth();
+            int startCol = firstDay.getDayOfWeek().getValue() % 7; // Sun=0
+            int daysInMonth = currentMonth.lengthOfMonth();
 
             int day = 1;
             for (int row = 0; row < 6 && day <= daysInMonth; row++) {
                 for (int col = 0; col < COLS && day <= daysInMonth; col++) {
-                    if (row == 0 && col < startCol) continue;
+                    if (row == 0 && col < startCol) {
+                        continue;
+                    }
 
                     int x = col * cellW;
                     int y = HEADER_H + row * cellH;
 
                     boolean isWeekend = (col == 0 || col == 6);
-                    boolean isToday   = (today.getYear()  == currentMonth.getYear()
-                                      && today.getMonthValue() == currentMonth.getMonthValue()
-                                      && today.getDayOfMonth() == day);
+                    boolean isToday = (today.getYear() == currentMonth.getYear()
+                            && today.getMonthValue() == currentMonth.getMonthValue()
+                            && today.getDayOfMonth() == day);
                     boolean isHovered = (hoveredDay == day);
 
                     List<LeaveRequestEntity> appr = approvedByDay.getOrDefault(day, List.of());
@@ -573,16 +823,18 @@ public class Report extends JPanel {
 
                     // Leave indicators
                     if (hasLeave) {
-                        int dotY   = y + cellH - 28;
+                        int dotY = y + cellH - 28;
                         int dotSize = 8;
-                        int dotGap  = 5;
+                        int dotGap = 5;
                         int padding = 6;
 
                         // Approved dots (green)
                         int dotX = x + padding;
                         int shown = 0;
                         for (LeaveRequestEntity e : appr) {
-                            if (shown >= MAX_DOTS) break;
+                            if (shown >= MAX_DOTS) {
+                                break;
+                            }
                             g2.setColor(APPROVED_COLOR);
                             g2.fillOval(dotX, dotY, dotSize, dotSize);
                             dotX += dotSize + dotGap;
@@ -591,8 +843,12 @@ public class Report extends JPanel {
 
                         // Pending dots (amber)
                         for (LeaveRequestEntity e : pend) {
-                            if (shown >= MAX_DOTS + appr.size()) break;
-                            if (shown >= MAX_DOTS * 2) break;
+                            if (shown >= MAX_DOTS + appr.size()) {
+                                break;
+                            }
+                            if (shown >= MAX_DOTS * 2) {
+                                break;
+                            }
                             g2.setColor(PENDING_COLOR);
                             g2.fillOval(dotX, dotY, dotSize, dotSize);
                             dotX += dotSize + dotGap;
@@ -611,14 +867,14 @@ public class Report extends JPanel {
                         // Name pill for the first person (if cell is tall enough)
                         if (cellH >= 70) {
                             LeaveRequestEntity first = !appr.isEmpty() ? appr.get(0) : pend.get(0);
-                            Color pillBg  = !appr.isEmpty() ? APPROVED_BG : PENDING_BG;
-                            Color pillFg  = !appr.isEmpty() ? APPROVED_COLOR : PENDING_COLOR;
+                            Color pillBg = !appr.isEmpty() ? APPROVED_BG : PENDING_BG;
+                            Color pillFg = !appr.isEmpty() ? APPROVED_COLOR : PENDING_COLOR;
 
                             String pillText = first.getFullName().split(" ")[0]; // first name only
                             g2.setFont(SystemTheme.PANDAK_TEXT);
                             FontMetrics fmP = g2.getFontMetrics();
-                            int pw  = fmP.stringWidth(pillText) + 10;
-                            int ph  = 16;
+                            int pw = fmP.stringWidth(pillText) + 10;
+                            int ph = 16;
                             int pillX = x + 5;
                             int pillY = y + cellH - 48;
 
@@ -652,25 +908,33 @@ public class Report extends JPanel {
             g2.dispose();
         }
 
-        /** Returns the day-of-month at the given panel-local point, or -1. */
+        /**
+         * Returns the day-of-month at the given panel-local point, or -1.
+         */
         private int dayAtPoint(Point p) {
             int w = getWidth();
             int cellW = w / COLS;
-            int bodyH  = getHeight() - HEADER_H;
-            int cellH  = bodyH / 6;
+            int bodyH = getHeight() - HEADER_H;
+            int cellH = bodyH / 6;
 
-            if (p.y < HEADER_H) return -1;
+            if (p.y < HEADER_H) {
+                return -1;
+            }
 
             int col = p.x / cellW;
             int row = (p.y - HEADER_H) / cellH;
-            if (col < 0 || col >= COLS || row < 0 || row >= 6) return -1;
+            if (col < 0 || col >= COLS || row < 0 || row >= 6) {
+                return -1;
+            }
 
             LocalDate firstDay = currentMonth.atDay(1);
-            int startCol       = firstDay.getDayOfWeek().getValue() % 7;
-            int daysInMonth    = currentMonth.lengthOfMonth();
+            int startCol = firstDay.getDayOfWeek().getValue() % 7;
+            int daysInMonth = currentMonth.lengthOfMonth();
 
             int day = row * COLS + col - startCol + 1;
-            if (day < 1 || day > daysInMonth) return -1;
+            if (day < 1 || day > daysInMonth) {
+                return -1;
+            }
             return day;
         }
     }
