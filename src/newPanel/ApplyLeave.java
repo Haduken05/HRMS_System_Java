@@ -25,10 +25,10 @@ public class ApplyLeave extends JPanel {
     private static final Color TEXT_MAIN = SystemTheme.TEXT_MAIN;
     private static final Color TEXT_MUTED = SystemTheme.TEXT_MUTED;
     private static final Color BORDER_CLR = SystemTheme.BORDER_COLOR;
-    
+
     private static final Color BTN_SUBMIT = SystemTheme.BTN_YES;
     private static final Color BTN_CANCEL = SystemTheme.BTN_NO;
-    
+
     private static final Color BADGE_VL = SystemTheme.BADGE_VL;
     private static final Color BADGE_SL = SystemTheme.BADGE_SL;
     private static final Color BADGE_TEXT = SystemTheme.BADGE_TEXT;
@@ -167,8 +167,8 @@ public class ApplyLeave extends JPanel {
             cal.set(java.util.Calendar.SECOND, 0);
             cal.set(java.util.Calendar.MILLISECOND, 0);
 
-            if ("VL".equals(code) || "SL".equals(code)) {
-                cal.add(java.util.Calendar.DAY_OF_MONTH, 2); // must be at least 2 days away
+            if ("VL".equals(code)) {
+                cal.add(java.util.Calendar.DAY_OF_MONTH, 2); // VL only — 2 days advance
             }
 
             dcFrom.setMinSelectableDate(cal.getTime());
@@ -185,11 +185,16 @@ public class ApplyLeave extends JPanel {
             if (from == null || to == null) {
                 return;
             }
-            if (to.before(from)) {
+
+            // Strip time so same-day (from == to) gives daysRequested = 1, not 0
+            java.util.Date fromStripped = LeaveLogic.stripTime(from);
+            java.util.Date toStripped = LeaveLogic.stripTime(to);
+
+            if (toStripped.before(fromStripped)) {
                 return;
             }
 
-            long daysRequested = LeaveLogic.daysBetween(from, to) + 1;
+            long daysRequested = LeaveLogic.daysBetween(fromStripped, toStripped) + 1;
             String leaveTypeRaw = (String) cmbLeaveType.getSelectedItem();
             String leaveCode = mapLeaveType(leaveTypeRaw);
             if (leaveCode == null) {
@@ -217,7 +222,6 @@ public class ApplyLeave extends JPanel {
                         + "Please shorten your leave period.</html>",
                         "Insufficient Credits",
                         JOptionPane.WARNING_MESSAGE);
-
                 dcTo.setDate(null);
             }
         });
@@ -248,8 +252,8 @@ public class ApplyLeave extends JPanel {
         rulesBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel rulesText = new JLabel("<html><ul>"
-                + "<li>Vacation Leave and Sick Leave must be filed 2 days before the leave.</li>"
-                + "<li>Sick Leave filed after the leave requires a medical certificate if 2+ days absent.</li>"
+                + "<li>Vacation Leave must be filed 2 days before the leave.</li>"
+                + "<li>Sick leave can be filed today or tomorrow. However, a medical certificate is required for absences of 2 or more days</li>"
                 + "<li>Leave days are deducted from your credits upon submission.</li>"
                 + "</ul></html>");
         rulesText.setFont(SystemTheme.NORMAL_TEXT);
@@ -499,10 +503,10 @@ public class ApplyLeave extends JPanel {
             return;
         }
 
-        java.util.Date fromDate = dcFrom.getDate();
-        java.util.Date toDate = dcTo.getDate();
+        // ── Strip time HERE so hasOverlap and the DB both get clean midnight dates ──
+        java.util.Date fromDate = LeaveLogic.stripTime(dcFrom.getDate());
+        java.util.Date toDate = LeaveLogic.stripTime(dcTo.getDate());
 
-        // Validate
         String error = LeaveLogic.validate(currentEmpId, leaveCode, fromDate, toDate, uploadedPath);
         if (error != null) {
             JOptionPane.showMessageDialog(this, error, "Validation Error",
@@ -510,7 +514,6 @@ public class ApplyLeave extends JPanel {
             return;
         }
 
-        // Submit to DB
         String pathForDb = (uploadedPath != null) ? UPLOAD_DIR + uploadedPath : null;
         boolean ok = LeaveQuery.submitRequest(currentEmpId, leaveCode, fromDate, toDate, pathForDb);
 
@@ -519,8 +522,6 @@ public class ApplyLeave extends JPanel {
                     "Database Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-       
 
         JOptionPane.showMessageDialog(this,
                 "Leave request submitted successfully!\nStatus: Pending approval.",

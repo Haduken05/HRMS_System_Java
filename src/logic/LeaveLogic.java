@@ -8,60 +8,66 @@ public class LeaveLogic {
 
     public static String validate(int empId, String leaveType,
             Date startDate, Date endDate, String selectedPath) {
-
-        if (startDate == null || endDate == null)
+        if (startDate == null || endDate == null) {
             return "Please select both From and To dates.";
-
-        if (leaveType == null || leaveType.isBlank() || leaveType.equals("Select Leave Type"))
+        }
+        if (leaveType == null || leaveType.isBlank() || leaveType.equals("Select Leave Type")) {
             return "Please select a leave type.";
+        }
 
+        Date start = stripTime(startDate);
+        Date end = stripTime(endDate);
         Date today = stripTime(new Date());
 
-        if (startDate.before(today))
+        if (start.before(today)) {
             return "Start date cannot be in the past!";
-
-        if (endDate.before(startDate))
+        }
+        if (end.before(start)) {
             return "End date cannot be before Start date!";
+        }
 
-        long daysOfLeave = daysBetween(startDate, endDate) + 1;
-        long daysNotice  = daysBetween(today, startDate);
+        long daysOfLeave = daysBetween(start, end) + 1;
+        long daysNotice = daysBetween(today, start);
 
-        // Overlap check (Pending or Approved)
-        if (LeaveQuery.hasOverlap(empId, startDate, endDate)) {
+        if (LeaveQuery.hasOverlap(empId, start, end)) {
             return "<html>You already have a <b>Pending or Approved</b> leave request<br>"
-                 + "that overlaps with the selected dates.<br><br>"
-                 + "Please wait for the admin to process your existing request,<br>"
-                 + "or choose different dates.</html>";
+                    + "that overlaps with the selected dates.<br><br>"
+                    + "Please wait for the admin to process your existing request,<br>"
+                    + "or choose different dates.</html>";
         }
 
         switch (leaveType) {
             case "VL":
-                if (daysNotice < 2)
+                if (daysNotice < 2) {
                     return "Vacation Leave must be filed at least 2 days in advance!";
-
+                }
                 int vlCredits = LeaveQuery.getVLCredits(empId);
-                if (vlCredits < 0)
+                if (vlCredits < 0) {
                     return "Could not retrieve VL credits. Please try again.";
-                if (daysOfLeave > vlCredits)
+                }
+                if (daysOfLeave > vlCredits) {
                     return "Insufficient Vacation Leave credits! You have " + vlCredits
-                         + " VL day(s) remaining, but are requesting " + daysOfLeave + ".";
+                            + " VL day(s) remaining, but are requesting " + daysOfLeave + ".";
+                }
                 break;
 
             case "SL":
-
+                
                 if (daysOfLeave >= 2
                         && (selectedPath == null || selectedPath.isBlank()
-                            || selectedPath.equals("None"))) {
-                    return "Sick Leave for 2 or more days requires a Medical Certificate!\n"
-                         + "Please upload a supporting document before submitting.";
+                        || selectedPath.equals("None"))) {
+                    return """
+                           Sick Leave for 2 or more days requires a Medical Certificate!
+                           Please upload a supporting document before submitting.""";
                 }
-
                 int slCredits = LeaveQuery.getSLCredits(empId);
-                if (slCredits < 0)
+                if (slCredits < 0) {
                     return "Could not retrieve SL credits. Please try again.";
-                if (daysOfLeave > slCredits)
+                }
+                if (daysOfLeave > slCredits) {
                     return "Insufficient Sick Leave credits! You have " + slCredits
-                         + " SL day(s) remaining, but are requesting " + daysOfLeave + ".";
+                            + " SL day(s) remaining, but are requesting " + daysOfLeave + ".";
+                }
                 break;
 
             default:

@@ -120,8 +120,8 @@ public class LeaveQuery {
         String sql = "SELECT COUNT(*) FROM leave_requests "
                 + "WHERE emp_id = ? "
                 + "AND status IN ('Pending', 'Approved') "
-                + "AND start_date <= ? "
-                + "AND end_date   >= ?";
+                + "AND DATE(start_date) <= DATE(?) "
+                + "AND DATE(end_date)   >= DATE(?)";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setInt(1, empId);
             pst.setDate(2, new java.sql.Date(endDate.getTime()));
