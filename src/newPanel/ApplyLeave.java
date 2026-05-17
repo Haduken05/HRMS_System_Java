@@ -49,6 +49,8 @@ public class ApplyLeave extends JPanel {
     private JLabel fileNameLabel;
     private JButton btnClearFile;
 
+    private Runnable onSubmitSuccess;
+
     public ApplyLeave() {
         initComponents();
     }
@@ -417,7 +419,7 @@ public class ApplyLeave extends JPanel {
             String destName = System.currentTimeMillis() + "_" + file.getName();
             Path dest = uploadDir.resolve(destName);
             Files.copy(file.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-            uploadedPath = dest.toAbsolutePath().toString();
+            uploadedPath = destName;
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this,
@@ -506,7 +508,9 @@ public class ApplyLeave extends JPanel {
         }
 
         // Submit to DB
-        boolean ok = LeaveQuery.submitRequest(currentEmpId, leaveCode, fromDate, toDate, uploadedPath);
+        String pathForDb = (uploadedPath != null) ? UPLOAD_DIR + uploadedPath : null;
+        boolean ok = LeaveQuery.submitRequest(currentEmpId, leaveCode, fromDate, toDate, pathForDb);
+
         if (!ok) {
             JOptionPane.showMessageDialog(this, "Failed to submit request. Please try again.",
                     "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -524,6 +528,9 @@ public class ApplyLeave extends JPanel {
                 "Success", JOptionPane.INFORMATION_MESSAGE);
 
         refreshCreditBadges();
+        if (onSubmitSuccess != null) {
+            onSubmitSuccess.run();
+        }
         resetForm();
     }
 
@@ -561,6 +568,10 @@ public class ApplyLeave extends JPanel {
         txtNameEmployee.setEditable(false);
 
         refreshCreditBadges();
+    }
+
+    public void setOnSubmitSuccess(Runnable callback) {
+        this.onSubmitSuccess = callback;
     }
 
     //  Helpers

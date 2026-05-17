@@ -1,85 +1,77 @@
 package logic;
 
 import dbquery.LeaveQuery;
-
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class LeaveLogic {
 
     public static String validate(int empId, String leaveType,
-            Date startDate, Date endDate,
-            String selectedPath) {
+            Date startDate, Date endDate, String selectedPath) {
 
-        if (startDate == null || endDate == null) {
+        if (startDate == null || endDate == null)
             return "Please select both From and To dates.";
-        }
 
-        if (leaveType == null || leaveType.isBlank() || leaveType.equals("Select Leave Type")) {
+        if (leaveType == null || leaveType.isBlank() || leaveType.equals("Select Leave Type"))
             return "Please select a leave type.";
-        }
 
         Date today = stripTime(new Date());
 
-        if (startDate.before(today)) {
+        if (startDate.before(today))
             return "Start date cannot be in the past!";
-        }
 
-        if (endDate.before(startDate)) {
+        if (endDate.before(startDate))
             return "End date cannot be before Start date!";
-        }
 
         long daysOfLeave = daysBetween(startDate, endDate) + 1;
+        long daysNotice  = daysBetween(today, startDate);
 
-        long daysNotice = daysBetween(today, startDate);
+        // Overlap check (Pending or Approved)
+        if (LeaveQuery.hasOverlap(empId, startDate, endDate)) {
+            return "<html>You already have a <b>Pending or Approved</b> leave request<br>"
+                 + "that overlaps with the selected dates.<br><br>"
+                 + "Please wait for the admin to process your existing request,<br>"
+                 + "or choose different dates.</html>";
+        }
 
         switch (leaveType) {
-
             case "VL":
-                if (daysNotice < 2) {
+                if (daysNotice < 2)
                     return "Vacation Leave must be filed at least 2 days in advance!";
-                }
 
                 int vlCredits = LeaveQuery.getVLCredits(empId);
-                if (vlCredits < 0) {
+                if (vlCredits < 0)
                     return "Could not retrieve VL credits. Please try again.";
-                }
-                if (daysOfLeave > vlCredits) {
-                    return "Insufficient Vacation Leave credits! "
-                            + "You have " + vlCredits + " VL day(s) remaining, "
-                            + "but are requesting " + daysOfLeave + ".";
-                }
+                if (daysOfLeave > vlCredits)
+                    return "Insufficient Vacation Leave credits! You have " + vlCredits
+                         + " VL day(s) remaining, but are requesting " + daysOfLeave + ".";
                 break;
 
             case "SL":
 
-                if (!startDate.after(today) && daysOfLeave >= 2
-                        && (selectedPath == null || selectedPath.isBlank() || selectedPath.equals("None"))) {
-                    return "Sick Leave for 2+ days filed after the leave requires a Medical Certificate!";
+                if (daysOfLeave >= 2
+                        && (selectedPath == null || selectedPath.isBlank()
+                            || selectedPath.equals("None"))) {
+                    return "Sick Leave for 2 or more days requires a Medical Certificate!\n"
+                         + "Please upload a supporting document before submitting.";
                 }
 
                 int slCredits = LeaveQuery.getSLCredits(empId);
-                if (slCredits < 0) {
+                if (slCredits < 0)
                     return "Could not retrieve SL credits. Please try again.";
-                }
-                if (daysOfLeave > slCredits) {
-                    return "Insufficient Sick Leave credits! "
-                            + "You have " + slCredits + " SL day(s) remaining, "
-                            + "but are requesting " + daysOfLeave + ".";
-                }
+                if (daysOfLeave > slCredits)
+                    return "Insufficient Sick Leave credits! You have " + slCredits
+                         + " SL day(s) remaining, but are requesting " + daysOfLeave + ".";
                 break;
 
             default:
                 return "Unknown leave type: " + leaveType;
         }
-
-        return null; 
+        return null;
     }
 
-    //  Helpers
     public static long daysBetween(Date a, Date b) {
-        long diffMs = b.getTime() - a.getTime();
-        return TimeUnit.MILLISECONDS.toDays(diffMs);
+        return TimeUnit.MILLISECONDS.toDays(b.getTime() - a.getTime());
     }
 
     public static Date stripTime(Date date) {

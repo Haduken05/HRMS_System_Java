@@ -16,20 +16,17 @@ public class MainFrame extends JFrame {
     private EmployeeManagement empManagement;
     private LeaveRequestApproval leaveRequest;
     private ReportsPanel reportsPanel;
-    
-        //private DirectoryPanel directoryPanel;
-        //private ManagementPanel managementPanel;
 
+    //private DirectoryPanel directoryPanel;
+    //private ManagementPanel managementPanel;
     private final JButton btnApplyLeave = new JButton("Apply Leave");
     private final JButton btnProfile = new JButton("Profile");
     private final JButton btnEmployee = new JButton("Employee");
     private final JButton btnLeaveRequest = new JButton("Management");
     private final JButton btnReports = new JButton("Reports");
     private final JButton btnExit = new JButton("Exit");
-    
-        //private final JButton btnDirectory = new JButton("Directory");
 
-        
+    //private final JButton btnDirectory = new JButton("Directory");
     private final JLabel lblWelcome = new JLabel("Welcome");
     private final JLabel lblLogo = new JLabel();
 
@@ -41,9 +38,8 @@ public class MainFrame extends JFrame {
     public static final String CARD_EMPLOYEE = "EMPLOYEE";
     public static final String CARD_LEAVE = "LEAVE_REQUEST";
     public static final String CARD_REPORTS = "REPORTS";
-    
-        public static final String CARD_DIRECTORY = "DIRECTORY";
 
+    public static final String CARD_DIRECTORY = "DIRECTORY";
 
     public MainFrame() {
         setTitle("HRMS");
@@ -121,20 +117,15 @@ public class MainFrame extends JFrame {
         empManagement = new EmployeeManagement();
         leaveRequest = new LeaveRequestApproval();
         reportsPanel = new ReportsPanel();
-        
-                //directoryPanel = new DirectoryPanel();
-                //managementPanel = new ManagementPanel();
 
+        // After a successful leave submission, keep Profile credits in sync
+        applyLeavePanel.setOnSubmitSuccess(() -> profilePanel.refreshCredits());
 
         contentPanel.add(applyLeavePanel, CARD_APPLY_LEAVE);
         contentPanel.add(profilePanel, CARD_PROFILE);
         contentPanel.add(empManagement, CARD_EMPLOYEE);
         contentPanel.add(leaveRequest, CARD_LEAVE);
         contentPanel.add(reportsPanel, CARD_REPORTS);
-            
-                //contentPanel.add(directoryPanel, CARD_DIRECTORY);
-                //contentPanel.add(managementPanel, CARD_MANAGEMENT);
-
     }
 
     private void wireNavButtons() {
@@ -143,10 +134,8 @@ public class MainFrame extends JFrame {
         btnEmployee.addActionListener(e -> showCard(CARD_EMPLOYEE));
         btnLeaveRequest.addActionListener(e -> showCard(CARD_LEAVE));
         btnReports.addActionListener(e -> showCard(CARD_REPORTS));
-        
-                //btnDirectory.addActionListener(e -> showCard(CARD_DIRECTORY));
 
-        
+        //btnDirectory.addActionListener(e -> showCard(CARD_DIRECTORY));
         btnExit.addActionListener(e -> {
             int ok = JOptionPane.showConfirmDialog(this,
                     "Do you want to exit the system?", "Confirm Exit",
@@ -166,7 +155,7 @@ public class MainFrame extends JFrame {
 
         Employee emp = EmployeeQuery.getById(empId);
         if (emp != null) {
-            profilePanel.loadProfile(emp); 
+            profilePanel.loadProfile(emp);
         }
         applyLeavePanel.setEmployee(empId, name);
 
@@ -175,8 +164,7 @@ public class MainFrame extends JFrame {
         btnLeaveRequest.setVisible(!isEmployee);
         btnReports.setVisible(!isEmployee);
 
-                    //btnDirectory.setVisible(!isEmployee);
-        
+        //btnDirectory.setVisible(!isEmployee);
         showCard(isEmployee ? CARD_APPLY_LEAVE : CARD_LEAVE);
     }
 }
