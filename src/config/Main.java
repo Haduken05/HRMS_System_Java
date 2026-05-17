@@ -173,7 +173,7 @@ public class Main extends javax.swing.JFrame {
 
                 //NewJFrame dashboard = new NewJFrame();
                 view.MainFrame dashboard = new view.MainFrame();
-                dashboard.handleUserSession(fullName, userRole, empId);
+//                dashboard.handleUserSession(fullName, userRole, empId);
 
                 dashboard.setVisible(true);
                 this.dispose();

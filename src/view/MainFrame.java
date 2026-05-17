@@ -1,10 +1,11 @@
 package view;
 
+import config.LogoutFrame;
 import theme.SystemTheme;
 import newPanel.*;
-import panels.*;
 
 import dataObject.Employee;
+import dataObject.SessionUser;
 import dbquery.EmployeeQuery;
 import logic.SessionLogic;
 import javax.swing.*;
@@ -14,7 +15,7 @@ public class MainFrame extends JFrame {
 
     private static final Color BG = SystemTheme.PRIMARY_COLOR;
     private static final Color TEXT_COLOR = SystemTheme.TEXT_COLOR;
-    
+
     private ApplyLeave applyLeavePanel;
     private Profile profilePanel;
     private EmployeeManagement empManagement;
@@ -26,7 +27,7 @@ public class MainFrame extends JFrame {
     private final JButton btnEmployee = new JButton("Employee");
     private final JButton btnLeaveRequest = new JButton("Management");
     private final JButton btnReports = new JButton("Reports");
-    private final JButton btnExit = new JButton("Exit");
+    private final JButton btnLogout = new JButton("Log-Out");
 
     private final JLabel lblWelcome = new JLabel("Welcome");
     private final JLabel lblLogo = new JLabel();
@@ -74,26 +75,25 @@ public class MainFrame extends JFrame {
         sidebar.add(lblWelcome);
 
         sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
-        
+
         String imgPath = "Hrms_Logo.png";
-        
+
         try {
             java.net.URL imgUrl = getClass().getResource("/Image/" + imgPath);
             if (imgUrl != null) {
-                
+
                 ImageIcon originalIcon = new ImageIcon(imgUrl);
-                
+
                 int targetWidth = 250;
                 int targetHeight = 140;
-                
+
                 Image scaledImage = originalIcon.getImage().getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
-                
+
                 lblLogo.setIcon(new ImageIcon(scaledImage));
             }
         } catch (Exception ignored) {
 
         }
-        
 
         lblLogo.setBackground(Color.WHITE);
         lblLogo.setOpaque(true);
@@ -116,10 +116,10 @@ public class MainFrame extends JFrame {
         }
 
         sidebar.add(Box.createVerticalGlue());
-        btnExit.setPreferredSize(new Dimension(75, 44));
-        btnExit.setMaximumSize(new Dimension(Integer.MAX_VALUE, 63));
-        btnExit.setAlignmentX(Component.CENTER_ALIGNMENT);
-        sidebar.add(btnExit);
+        btnLogout.setPreferredSize(new Dimension(75, 44));
+        btnLogout.setMaximumSize(new Dimension(Integer.MAX_VALUE, 63));
+        btnLogout.setAlignmentX(Component.CENTER_ALIGNMENT);
+        sidebar.add(btnLogout);
 
         return sidebar;
     }
@@ -133,7 +133,6 @@ public class MainFrame extends JFrame {
 
         applyLeavePanel.setOnSubmitSuccess(() -> profilePanel.refreshCredits());
         leaveRequest.setOnStatusChanged(() -> applyLeavePanel.refreshCreditBadges());
-
 
         contentPanel.add(applyLeavePanel, CARD_APPLY_LEAVE);
         contentPanel.add(profilePanel, CARD_PROFILE);
@@ -149,13 +148,10 @@ public class MainFrame extends JFrame {
         btnLeaveRequest.addActionListener(e -> showCard(CARD_LEAVE));
         btnReports.addActionListener(e -> showCard(CARD_REPORTS));
 
-        btnExit.addActionListener(e -> {
-            int ok = JOptionPane.showConfirmDialog(this,
-                    "Do you want to exit the system?", "Confirm Exit",
-                    JOptionPane.YES_NO_OPTION);
-            if (ok == JOptionPane.YES_OPTION) {
-                System.exit(0);
-            }
+        btnLogout.addActionListener(e -> {
+
+            LogoutFrame logOut = new LogoutFrame(this);
+            logOut.setVisible(true);
         });
     }
 
@@ -163,19 +159,26 @@ public class MainFrame extends JFrame {
         cardLayout.show(contentPanel, cardName);
     }
 
-    public void handleUserSession(String name, String role, int empId) {
-        lblWelcome.setText("User: " + name + " (" + role + ")");
+    public void handleUserSession(SessionUser user) {
+        
+        lblWelcome.setText("<html><div style='text-align: center;'>"
+                + "<span style='font-size: 20px; margin-bottom: 8px;'> Welcome </span><br>"
+                + "<span style='font-size: 14px;'>" + user.fullName + "</span><br>"
+                + "<span style='font-weight: normal; font-size: 12px; color: #D1D5DB;'>" + user.role + "</span>"
+                + "</div></html>");
 
-        Employee emp = EmployeeQuery.getById(empId);
+        Employee emp = EmployeeQuery.getById(user.empId);
         if (emp != null) {
             profilePanel.loadProfile(emp);
         }
-        applyLeavePanel.setEmployee(empId, name);
+        applyLeavePanel.setEmployee(user.empId, user.fullName);
 
-        boolean isEmployee = SessionLogic.isEmployee(role);
+        boolean isEmployee = SessionLogic.isEmployee(user.role);
         btnEmployee.setVisible(!isEmployee);
         btnLeaveRequest.setVisible(!isEmployee);
         btnReports.setVisible(!isEmployee);
+
+        leaveRequest.loadFromDatabase();
 
         showCard(isEmployee ? CARD_APPLY_LEAVE : CARD_LEAVE);
     }
