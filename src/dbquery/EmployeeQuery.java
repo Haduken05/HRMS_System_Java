@@ -190,4 +190,16 @@ public class EmployeeQuery {
             return false;
         }
     }
+
+    public static boolean resetCreditsForNewYear() {
+        String sql = "UPDATE employees SET vl_credits = 8, sl_credits = 8";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

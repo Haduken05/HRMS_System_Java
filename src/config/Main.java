@@ -208,6 +208,10 @@ public class Main extends javax.swing.JFrame {
         }
         //</editor-fold>
 
+        config.CreditResetScheduler.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(config.CreditResetScheduler::stop));
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new LoginFrame().setVisible(true));
     }
