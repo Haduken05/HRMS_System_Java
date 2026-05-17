@@ -21,7 +21,7 @@ public class MainFrame extends JFrame {
     private EmployeeManagement empManagement;
     private LeaveRequestApproval leaveRequest;
     private Report reportsPanel;
-    private AttendanceTracker attendancePanel; 
+    private AttendanceTracker attendancePanel;
 
     private final JButton btnApplyLeave = new JButton("Apply Leave");
     private final JButton btnProfile = new JButton("Profile");
@@ -42,7 +42,7 @@ public class MainFrame extends JFrame {
     public static final String CARD_LEAVE = "LEAVE_REQUEST";
     public static final String CARD_REPORTS = "REPORTS";
     public static final String CARD_DIRECTORY = "DIRECTORY";
-    public static final String CARD_ATTENDANCE = "ATTENDANCE"; 
+    public static final String CARD_ATTENDANCE = "ATTENDANCE";
 
     public MainFrame() {
         setTitle("HRMS");
@@ -86,7 +86,8 @@ public class MainFrame extends JFrame {
                 Image scaledImage = originalIcon.getImage().getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
                 lblLogo.setIcon(new ImageIcon(scaledImage));
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         lblLogo.setBackground(Color.WHITE);
         lblLogo.setOpaque(true);
@@ -132,7 +133,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(empManagement, CARD_EMPLOYEE);
         contentPanel.add(leaveRequest, CARD_LEAVE);
         contentPanel.add(reportsPanel, CARD_REPORTS);
-        contentPanel.add(attendancePanel, CARD_ATTENDANCE); 
+        contentPanel.add(attendancePanel, CARD_ATTENDANCE);
     }
 
     private void wireNavButtons() {
@@ -153,7 +154,7 @@ public class MainFrame extends JFrame {
     }
 
     public void handleUserSession(SessionUser user) {
-        boolean isAttendance = "special".equalsIgnoreCase(user.role); 
+        boolean isAttendance = "special".equalsIgnoreCase(user.role);
 
         if (isAttendance) {
 
@@ -184,6 +185,12 @@ public class MainFrame extends JFrame {
         if (emp != null) {
             profilePanel.loadProfile(emp);
         }
+        
+        if (emp != null) {
+            leaveRequest.setCurrentUserEmpId(user.empId);
+        }
+        leaveRequest.loadFromDatabase();
+
         applyLeavePanel.setEmployee(user.empId, user.fullName);
 
         boolean isEmployee = SessionLogic.isEmployee(user.role);

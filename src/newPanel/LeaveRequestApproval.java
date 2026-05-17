@@ -57,9 +57,15 @@ public class LeaveRequestApproval extends JPanel {
 
     private Runnable onStatusChanged;
 
+    private int currentUserEmpId = -1;
+
     public LeaveRequestApproval() {
         initComponents();
         loadFromDatabase();
+    }
+
+    public void setCurrentUserEmpId(int empId) {
+        this.currentUserEmpId = empId;
     }
 
     private void initComponents() {
@@ -226,6 +232,10 @@ public class LeaveRequestApproval extends JPanel {
         allDenied.clear();
 
         for (LeaveRequestEntity entity : LeaveQuery.getRequestsByStatus("Pending")) {
+
+            if (currentUserEmpId != -1 && entity.getEmpId() == currentUserEmpId) {
+                continue;
+            }
             allPending.add(LeaveRequestLogic.toRow(entity));
         }
 
