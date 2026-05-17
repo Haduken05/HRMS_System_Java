@@ -413,10 +413,21 @@ public class AttendanceTracker extends JPanel {
 
         int empId = resolvedInEmployee.empId;
 
-        if (AttendanceQuery.hasOpenEntry(empId)) {
-            JOptionPane.showMessageDialog(this,
-                    "<html><b>" + resolvedInEmployee.fullName + "</b> is already clocked in today.</html>",
-                    "Already Clocked In", JOptionPane.INFORMATION_MESSAGE);
+        if (AttendanceQuery.hasAttendanceToday(empId)) {
+            if (AttendanceQuery.hasOpenEntry(empId)) {
+
+                JOptionPane.showMessageDialog(this,
+                        "<html><b>" + resolvedInEmployee.fullName
+                        + "</b> is already clocked in and has not timed out yet.</html>",
+                        "Already Clocked In", JOptionPane.WARNING_MESSAGE);
+            } else {
+
+                JOptionPane.showMessageDialog(this,
+                        "<html><b>" + resolvedInEmployee.fullName
+                        + "</b> has already completed their attendance for today.<br>"
+                        + "Duplicate entries are not allowed.</html>",
+                        "Attendance Already Recorded", JOptionPane.ERROR_MESSAGE);
+            }
             return;
         }
 
