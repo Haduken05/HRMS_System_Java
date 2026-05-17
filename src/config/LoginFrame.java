@@ -141,7 +141,7 @@ public class LoginFrame extends javax.swing.JFrame {
             return;
         }
 
-        String sql = "SELECT * FROM employees WHERE full_name = ? AND password = ?";
+        String sql = "SELECT * FROM employees WHERE username = ? AND password = ?";
 
         try (Connection conn = config.DBConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(sql)) {
 

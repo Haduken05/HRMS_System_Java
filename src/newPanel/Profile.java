@@ -14,6 +14,7 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -112,14 +113,33 @@ public class Profile extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int w = getWidth();
+                int h = getHeight();
+
                 g2.setColor(COLOR_FIELD_BG);
-                g2.fillOval(0, 0, getWidth() - 1, getHeight() - 1);
+                g2.fillOval(0, 0, w - 1, h - 1);
+
+                if (getIcon() instanceof ImageIcon) {
+                    Image img = ((ImageIcon) getIcon()).getImage();
+
+                    java.awt.geom.Ellipse2D.Float circle
+                            = new java.awt.geom.Ellipse2D.Float(0, 0, w - 1, h - 1);
+                    g2.setClip(circle);
+                    g2.drawImage(img, 0, 0, w, h, this);
+                    g2.setClip(null);
+
+                    g2.setColor(Color.decode("#CBD5E1"));
+                    g2.setStroke(new BasicStroke(1.5f));
+                    g2.drawOval(1, 1, w - 3, h - 3);
+                }
+
                 g2.dispose();
-                super.paintComponent(g);
             }
         };
         lblAvatarCircle.setPreferredSize(new Dimension(130, 130));
         lblAvatarCircle.setMinimumSize(new Dimension(130, 130));
+        lblAvatarCircle.setHorizontalAlignment(SwingConstants.CENTER);
 
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.CENTER;
@@ -322,6 +342,8 @@ public class Profile extends JPanel {
 
         lblVacationLeave.setText(String.valueOf(emp.vlCredits));
         lblSickLeave.setText(String.valueOf(emp.slCredits));
+        
+        loadAvatar(emp.profilePic);
     }
 
     public void refreshCredits() {
@@ -546,5 +568,38 @@ public class Profile extends JPanel {
         btn.setOpaque(true);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setBorderPainted(false);
+    }
+
+    private void loadAvatar(String profilePicPath) {
+        lblAvatarCircle.setIcon(null); 
+
+        if (profilePicPath == null || profilePicPath.isBlank()) {
+            lblAvatarCircle.repaint();
+            return;
+        }
+
+        File imgFile = new File("profile/" + profilePicPath);
+        if (!imgFile.exists()) {
+           
+            imgFile = new File(profilePicPath);
+        }
+        if (!imgFile.exists()) {
+            lblAvatarCircle.repaint();
+            return;
+        }
+
+        try {
+            java.awt.image.BufferedImage raw
+                    = javax.imageio.ImageIO.read(imgFile);
+            if (raw == null) {
+                return;
+            }
+
+            Image scaled = raw.getScaledInstance(130, 130, Image.SCALE_SMOOTH);
+            lblAvatarCircle.setIcon(new ImageIcon(scaled));
+            lblAvatarCircle.repaint();
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace(); 
+        }
     }
 }
