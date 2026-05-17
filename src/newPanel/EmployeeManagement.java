@@ -131,16 +131,19 @@ public class EmployeeManagement extends JPanel {
 
         // Tab listeners
         tabDirectory.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 switchTab("DIRECTORY", tabDirectory, tabAddEmployee, tabOffboard);
             }
         });
         tabAddEmployee.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 switchTab("ADD", tabAddEmployee, tabDirectory, tabOffboard);
             }
         });
         tabOffboard.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 switchTab("OFFBOARD", tabOffboard, tabDirectory, tabAddEmployee);
             }
@@ -243,14 +246,17 @@ public class EmployeeManagement extends JPanel {
 
         // Live search
         DocumentListener liveSearch = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 applyFilters();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 applyFilters();
             }
-
+            
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 applyFilters();
             }
@@ -336,14 +342,17 @@ public class EmployeeManagement extends JPanel {
 
         // Live lookup: as the manager types an ID, resolve the name immediately
         txtFireID.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 resolveEmployeeName();
             }
-
+            
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 resolveEmployeeName();
             }
-
+            
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 resolveEmployeeName();
             }
