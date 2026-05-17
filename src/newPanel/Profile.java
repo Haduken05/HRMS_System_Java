@@ -4,6 +4,7 @@ import theme.SystemTheme;
 import dataObject.Employee;
 import dataObject.LeaveRequestEntity;
 import dbquery.LeaveQuery;
+import dbquery.EmployeeQuery;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -27,6 +28,7 @@ public class Profile extends JPanel {
     private final Color COLOR_TEXT_MUTED = SystemTheme.TEXT_MUTED;
     private final Color COLOR_SUBTEXT = SystemTheme.ACCENT_COLOR;
     private final Color COLOR_TEXT_WHITE = SystemTheme.TEXT_COLOR;
+    private final Color COLOR_TEXT_INDICATOR = SystemTheme.TEXT_INDICATOR;
     private final Color COLOR_SUCCESS = SystemTheme.BTN_YES;
     private final Color COLOR_ACCENT = SystemTheme.TEXT_INDICATOR;
     private final Color COLOR_DANGER = SystemTheme.BTN_NO;
@@ -56,6 +58,7 @@ public class Profile extends JPanel {
     private JButton btnSaveChanges;
 
     private int currentEmpId = -1;
+    private String currentPassword = null;
 
     private JTable approvedTable;
     private JTable pendingTable;
@@ -270,9 +273,17 @@ public class Profile extends JPanel {
         txtNewPwd = createStyledPasswordField();
         txtConfirmPwd = createStyledPasswordField();
 
-        pwdGrid.add(createFieldWrapper("Current Password", txtCurrentPwd));
-        pwdGrid.add(createFieldWrapper("New Password", txtNewPwd));
-        pwdGrid.add(createFieldWrapper("Confirm Password", txtConfirmPwd));
+        JButton btnShowCurrent = createEyeButton();
+        JButton btnShowNew = createEyeButton();
+        JButton btnShowConfirm = createEyeButton();
+
+        wireEyeToggle(btnShowCurrent, txtCurrentPwd);
+        wireEyeToggle(btnShowNew, txtNewPwd);
+        wireEyeToggle(btnShowConfirm, txtConfirmPwd);
+
+        pwdGrid.add(createFieldWrapper("Current Password", txtCurrentPwd, btnShowCurrent));
+        pwdGrid.add(createFieldWrapper("New Password", txtNewPwd, btnShowNew));
+        pwdGrid.add(createFieldWrapper("Confirm Password", txtConfirmPwd, btnShowConfirm));
 
         cardsPanel.add(personalGrid, "PERSONAL");
         cardsPanel.add(approvedCard, "APPROVED");
@@ -296,12 +307,14 @@ public class Profile extends JPanel {
 
         // Tab listeners
         tabPersonalInfo.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 activateTab("PERSONAL");
                 btnSaveChanges.setVisible(false);
             }
         });
         tabApprovedLeaves.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 activateTab("APPROVED");
                 loadApprovedLeaves();
@@ -309,6 +322,7 @@ public class Profile extends JPanel {
             }
         });
         tabPendingLeaves.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 activateTab("PENDING");
                 loadPendingLeaves();
@@ -316,10 +330,12 @@ public class Profile extends JPanel {
             }
         });
         tabChangePassword.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 activateTab("PASSWORD");
                 btnSaveChanges.setText("Update Password");
                 btnSaveChanges.setVisible(true);
+                btnSaveChanges.addActionListener(er -> handlePasswordChange());
             }
         });
 
@@ -329,6 +345,7 @@ public class Profile extends JPanel {
     //  Public API
     public void loadProfile(Employee emp) {
         currentEmpId = emp.empId;
+        currentPassword = emp.password;
 
         lblProfileName.setText(emp.fullName);
         lblEmployeeID.setText("EMP" + String.format("%03d", emp.empId));
@@ -342,7 +359,7 @@ public class Profile extends JPanel {
 
         lblVacationLeave.setText(String.valueOf(emp.vlCredits));
         lblSickLeave.setText(String.valueOf(emp.slCredits));
-        
+
         loadAvatar(emp.profilePic);
     }
 
@@ -560,6 +577,55 @@ public class Profile extends JPanel {
         return wrap;
     }
 
+    private JPanel createFieldWrapper(String labelText, JPasswordField input, JButton eyeBtn) {
+        JPanel wrap = new JPanel();
+        wrap.setBackground(COLOR_CARD);
+        wrap.setLayout(new BoxLayout(wrap, BoxLayout.Y_AXIS));
+
+        JLabel lbl = new JLabel(labelText);
+        lbl.setFont(SystemTheme.BOLD_TEXT);
+        lbl.setForeground(COLOR_TEXT_MAIN);
+        lbl.setBorder(new EmptyBorder(0, 0, 6, 0));
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel row = new JPanel(new BorderLayout(6, 0));
+        row.setBackground(COLOR_CARD);
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row.add(input, BorderLayout.CENTER);
+        row.add(eyeBtn, BorderLayout.EAST);
+
+        wrap.add(lbl);
+        wrap.add(row);
+        return wrap;
+    }
+
+    private JButton createEyeButton() {
+        JButton btn = new JButton("View");
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btn.setPreferredSize(new Dimension(60, 40));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBackground(COLOR_BTN_DARK);
+        btn.setForeground(COLOR_TEXT_WHITE);
+        btn.setBorder(new LineBorder(Color.decode("#CBD5E1"), 1, true));
+        btn.setToolTipText("Show / Hide password");
+        return btn;
+    }
+
+    private void wireEyeToggle(JButton eyeBtn, JPasswordField field) {
+        eyeBtn.addActionListener(e -> {
+            if (field.getEchoChar() == 0) {
+
+                field.setEchoChar('*');
+                eyeBtn.setForeground(COLOR_TEXT_WHITE);
+            } else {
+
+                field.setEchoChar((char) 0);
+                eyeBtn.setForeground(COLOR_TEXT_INDICATOR);
+            }
+        });
+    }
+
     private void styleButton(JButton btn, Color bg, Color fg) {
         btn.setBackground(bg);
         btn.setForeground(fg);
@@ -569,9 +635,64 @@ public class Profile extends JPanel {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setBorderPainted(false);
     }
+    
+    private void handlePasswordChange() {
+        String current = new String(txtCurrentPwd.getPassword()).trim();
+        String newPwd  = new String(txtNewPwd.getPassword()).trim();
+        String confirm = new String(txtConfirmPwd.getPassword()).trim();
+
+        if (current.isEmpty() || newPwd.isEmpty() || confirm.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please fill in all password fields.",
+                    "Missing Fields", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!current.equals(currentPassword)) {
+            JOptionPane.showMessageDialog(this,
+                    "Current password is incorrect.",
+                    "Wrong Password", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (!newPwd.equals(confirm)) {
+            JOptionPane.showMessageDialog(this,
+                    "New password and confirmation do not match.",
+                    "Mismatch", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (newPwd.equals(currentPassword)) {
+            JOptionPane.showMessageDialog(this,
+                    "New password must be different from your current password.",
+                    "Same Password", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int confirm2 = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to change your password?",
+                "Confirm Change", JOptionPane.YES_NO_OPTION);
+        if (confirm2 != JOptionPane.YES_OPTION) return;
+
+        boolean ok = EmployeeQuery.updatePassword(currentEmpId, newPwd); 
+        
+        if (ok) {
+            currentPassword = newPwd;
+            txtCurrentPwd.setText("");
+            txtNewPwd.setText("");
+            txtConfirmPwd.setText("");
+            JOptionPane.showMessageDialog(this,
+                    "Password updated successfully.",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to update password. Please try again.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     private void loadAvatar(String profilePicPath) {
-        lblAvatarCircle.setIcon(null); 
+        lblAvatarCircle.setIcon(null);
 
         if (profilePicPath == null || profilePicPath.isBlank()) {
             lblAvatarCircle.repaint();
@@ -580,7 +701,7 @@ public class Profile extends JPanel {
 
         File imgFile = new File("profile/" + profilePicPath);
         if (!imgFile.exists()) {
-           
+
             imgFile = new File(profilePicPath);
         }
         if (!imgFile.exists()) {
@@ -599,7 +720,7 @@ public class Profile extends JPanel {
             lblAvatarCircle.setIcon(new ImageIcon(scaled));
             lblAvatarCircle.repaint();
         } catch (java.io.IOException ex) {
-            ex.printStackTrace(); 
+            ex.printStackTrace();
         }
     }
 }

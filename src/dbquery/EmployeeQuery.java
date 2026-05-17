@@ -178,4 +178,16 @@ public class EmployeeQuery {
                 rs.getInt("sl_credits")
         );
     }
+
+    public static boolean updatePassword(int empId, String newPassword) {
+        String sql = "UPDATE employees SET password = ? WHERE emp_id = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setString(1, newPassword);
+            pst.setInt(2, empId);
+            return pst.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
