@@ -21,6 +21,7 @@ public class MainFrame extends JFrame {
     private EmployeeManagement empManagement;
     private LeaveRequestApproval leaveRequest;
     private Report reportsPanel;
+    private AttendanceTracker attendancePanel; 
 
     private final JButton btnApplyLeave = new JButton("Apply Leave");
     private final JButton btnProfile = new JButton("Profile");
@@ -40,8 +41,8 @@ public class MainFrame extends JFrame {
     public static final String CARD_EMPLOYEE = "EMPLOYEE";
     public static final String CARD_LEAVE = "LEAVE_REQUEST";
     public static final String CARD_REPORTS = "REPORTS";
-
     public static final String CARD_DIRECTORY = "DIRECTORY";
+    public static final String CARD_ATTENDANCE = "ATTENDANCE"; 
 
     public MainFrame() {
         setTitle("HRMS");
@@ -73,27 +74,19 @@ public class MainFrame extends JFrame {
         lblWelcome.setHorizontalAlignment(SwingConstants.CENTER);
 
         sidebar.add(lblWelcome);
-
         sidebar.add(Box.createRigidArea(new Dimension(0, 12)));
 
         String imgPath = "Hrms_Logo.png";
-
         try {
             java.net.URL imgUrl = getClass().getResource("/Image/" + imgPath);
             if (imgUrl != null) {
-
                 ImageIcon originalIcon = new ImageIcon(imgUrl);
-
                 int targetWidth = 250;
                 int targetHeight = 140;
-
                 Image scaledImage = originalIcon.getImage().getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
-
                 lblLogo.setIcon(new ImageIcon(scaledImage));
             }
-        } catch (Exception ignored) {
-
-        }
+        } catch (Exception ignored) {}
 
         lblLogo.setBackground(Color.WHITE);
         lblLogo.setOpaque(true);
@@ -102,7 +95,6 @@ public class MainFrame extends JFrame {
         lblLogo.setHorizontalAlignment(SwingConstants.CENTER);
         lblLogo.setBorder(new javax.swing.border.LineBorder(Color.BLACK, 5, false));
         sidebar.add(lblLogo);
-
         sidebar.add(Box.createRigidArea(new Dimension(0, 8)));
 
         Dimension btnSize = new Dimension(75, 44);
@@ -130,6 +122,7 @@ public class MainFrame extends JFrame {
         empManagement = new EmployeeManagement();
         leaveRequest = new LeaveRequestApproval();
         reportsPanel = new Report();
+        attendancePanel = new AttendanceTracker();
 
         applyLeavePanel.setOnSubmitSuccess(() -> profilePanel.refreshCredits());
         leaveRequest.setOnStatusChanged(() -> applyLeavePanel.refreshCreditBadges());
@@ -139,6 +132,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(empManagement, CARD_EMPLOYEE);
         contentPanel.add(leaveRequest, CARD_LEAVE);
         contentPanel.add(reportsPanel, CARD_REPORTS);
+        contentPanel.add(attendancePanel, CARD_ATTENDANCE); 
     }
 
     private void wireNavButtons() {
@@ -149,7 +143,6 @@ public class MainFrame extends JFrame {
         btnReports.addActionListener(e -> showCard(CARD_REPORTS));
 
         btnLogout.addActionListener(e -> {
-
             LogoutFrame logOut = new LogoutFrame(this);
             logOut.setVisible(true);
         });
@@ -160,12 +153,32 @@ public class MainFrame extends JFrame {
     }
 
     public void handleUserSession(SessionUser user) {
-        
+        boolean isAttendance = "special".equalsIgnoreCase(user.role); 
+
+        if (isAttendance) {
+
+            lblWelcome.setText("<html><div style='text-align: center;'>"
+                    + "<span style='font-size: 18px;'>Attendance Tracker</span>"
+                    + "</div></html>");
+
+            btnApplyLeave.setVisible(false);
+            btnProfile.setVisible(false);
+            btnEmployee.setVisible(false);
+            btnLeaveRequest.setVisible(false);
+            btnReports.setVisible(false);
+
+            showCard(CARD_ATTENDANCE);
+            return;
+        }
+
         lblWelcome.setText("<html><div style='text-align: center;'>"
                 + "<span style='font-size: 20px; margin-bottom: 8px;'> Welcome </span><br>"
                 + "<span style='font-size: 14px;'>" + user.fullName + "</span><br>"
                 + "<span style='font-weight: normal; font-size: 12px; color: #D1D5DB;'>" + user.role + "</span>"
                 + "</div></html>");
+
+        btnApplyLeave.setVisible(true);
+        btnProfile.setVisible(true);
 
         Employee emp = EmployeeQuery.getById(user.empId);
         if (emp != null) {
